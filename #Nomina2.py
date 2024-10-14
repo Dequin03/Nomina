@@ -19,6 +19,8 @@ fechas_seleccionadas = {}
 fechas=[]
 departamentos=[]
 descanso={}
+year=datetime.now().year
+dias_festivos=[date(year,1,1),date(year,5,1),date(year,9,16),date(year,12,25)]
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 ip=s.getsockname()[0]
@@ -171,7 +173,7 @@ def verificar_asistencias(codigoEmpleado):
         return asistencia_modificada if asistencia_modificada else None  # Asegurarse de devolver None si no hay datos
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo añadir o actualizar el dato: {e}")
-def excel_add(id):
+def excel_add(id,depar,tipo):
     # Cargar el archivo de Excel
     ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato.xlsx"
     workbook = load_workbook(ruta_excel)
@@ -179,7 +181,7 @@ def excel_add(id):
     # Obtener la hoja de trabajo
     sheet = workbook.active 
 
-    empleados = obtener_empleados()
+    empleados = obtener_empleados(depar,tipo)
     nombres = []
     ape=[]
     ape2=[]
@@ -365,14 +367,19 @@ def iniciar_sesion():
     if verificar_acceso(username, password):
         messagebox.showinfo("Éxito", "Acceso concedido. Usuario y contraseña correctos.")
         root.destroy()  # Cierra la ventana de login
-        abrir_ventana_principal(username, 'Confianza')  # Abre la ventana para añadir datos
+        abrir_ventana_principal(username, 'Sindicato')  # Abre la ventana para añadir datos
     else:
         messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
 # Función para abrir la ventana principal donde añadir datos
-def obtener_empleados(depar):
+def obtener_empleados(depar,tipo):
+    if tipo== "Sindicato":
+        tipoc=2
+    else:
+        tipoc=1
     conexion, cursor = conectar_bd_periodos()
-    cursor.execute("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=?",depar)
+    cursor.execute("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=?",depar,tipoc)
     empleados = cursor.fetchall()
+    print(empleados)
     conexion.close()
     return empleados
 def obtener_periodo(x):
@@ -424,62 +431,67 @@ def verificar_Permisos(usuario):
     # Cerrar la conexión
     if conexion:
         conexion.close()
-def abrir_ventana_principal(username,tipo_opcion):
-    depar="2201"
-    empleados = obtener_empleados(depar)
-    permiso= verificar_Permisos(username)
-    departamentos=obtener_departamentos()
+def abrir_ventana_principal(username, tipo_opcion):
+    depar = "2201"
+    empleados = obtener_empleados(depar,tipo_opcion)
+    permiso = verificar_Permisos(username)
+    departamentos = obtener_departamentos()
+
     # Crear la ventana
     ventana_empleados = tk.Tk()
     ventana_empleados.title("Empleados - Registro prenomina")
-    ventana_empleados.state('zoomed') 
+    ventana_empleados.state('zoomed')
+
     # Botón de cerrar sesión
     button_logout = tk.Button(ventana_empleados, text="Cerrar sesión", command=lambda: cerrar_sesion(ventana_empleados))
-    button_logout.grid(row=0, column=4, sticky="w")
+    button_logout.grid(row=2, column=4, sticky="w")
+
     # Combobox para seleccionar "Confianza" o "Sindicato"
     label_opcion = tk.Label(ventana_empleados, text="Selecciona la opción:")
-    label_opcion.grid(row=0, column=0, padx=5, pady=10, sticky="w")
+    label_opcion.grid(row=2, column=0, padx=5, pady=10, sticky="w")
     
     combobox = ttk.Combobox(ventana_empleados, values=["Sindicato", "Confianza"])
     combobox.set(tipo_opcion)  # Establecer la opción por defecto
-    combobox.grid(row=0, column=1, padx=5, pady=10, sticky="w")
+    combobox.grid(row=2, column=1, padx=5, pady=10, sticky="w")
+
     label_opcion = tk.Label(ventana_empleados, text="Selecciona Departamento:")
-    label_opcion.grid(row=0, column=2, padx=5, pady=10, sticky="w")
+    label_opcion.grid(row=2, column=2, padx=5, pady=10, sticky="w")
     
     combobox2 = ttk.Combobox(ventana_empleados, values=departamentos)
     combobox2.set(depar)  # Establecer la opción por defecto
-    combobox2.grid(row=0, column=3, padx=5, pady=10, sticky="w")
+    combobox2.grid(row=2, column=3, padx=5, pady=10, sticky="w")
     combobox2['state'] = "readonly"
     combobox['state'] = "readonly"
-    ventana_info = tk.Frame(ventana_empleados)
-    ventana_info.grid(row=1,column=0,sticky="NEWS")
-    ventana_empleados.grid_rowconfigure(1,weight=1)
-    ventana_empleados.grid_columnconfigure(0,weight=1)
-    canvas = tk.Canvas(ventana_info)
-    canvas.grid(row=0, column=0,sticky="news")
-    #Scrollbar
-    scrollbar_horizontal=tk.Scrollbar(ventana_info,orient="horizontal", command=canvas.xview)
-    scrollbar_horizontal.grid(row=2,column=0,sticky="ew")
-    canvas.configure(xscrollcommand=scrollbar_horizontal.set)
 
-    #Frame dinamico
-    frame_dinamico=tk.Frame(canvas)
-    frame_dinamico.grid(row=0,column=0)
-    canvas.create_window((0,0),window=frame_dinamico, anchor=tk.NW)
+    # Configurar el comportamiento de las filas y columnas
+    ventana_empleados.grid_rowconfigure(1, weight=1)
+    ventana_empleados.grid_columnconfigure(0, weight=1)
 
-    #inicializacion de tabla
-    actualizar_contenido(ventana_empleados,frame_dinamico,empleados,tipo_opcion,permiso,depar)
-    #vincular la combobox
-    combobox.bind("<<ComboboxSelected>>", lambda event: actualizar_contenido(ventana_empleados,frame_dinamico,empleados,combobox.get(),permiso,combobox2.get()))
-    combobox2.bind("<<ComboboxSelected>>", lambda event: actualizar_contenido(ventana_empleados,frame_dinamico,obtener_empleados(combobox2.get()),combobox.get(),permiso,combobox2.get()))
-    #tamaño del canvas
+    # Crear el Canvas y el Frame dinámico
+    canvas = tk.Canvas(ventana_empleados)
+    canvas.grid(row=1, column=0, sticky="nsew")
+
+    frame_dinamico = tk.Frame(canvas)
+    frame_dinamico.grid(row=0, column=0, sticky="nsew")
+
+    # Asociar el Frame dinámico con el Canvas
+    canvas.create_window((0, 0), window=frame_dinamico, anchor=tk.NW)
+
+    # Inicialización de la tabla
+    actualizar_contenido(ventana_empleados, frame_dinamico, empleados, tipo_opcion, permiso, depar)
+
+    # Vincular la combobox
+    combobox.bind("<<ComboboxSelected>>", lambda event: actualizar_contenido(ventana_empleados, frame_dinamico, obtener_empleados(combobox2.get(),combobox.get()), combobox.get(), permiso, combobox2.get()))
+    combobox2.bind("<<ComboboxSelected>>", lambda event: actualizar_contenido(ventana_empleados, frame_dinamico, obtener_empleados(combobox2.get(),combobox.get()), combobox.get(), permiso, combobox2.get()))
+
+    # Ajustar el tamaño del canvas cuando se redimensiona
     def ajustar_canvas(event):
-        canvas.config(width=event.width, height=event.height)
         canvas.configure(scrollregion=canvas.bbox("all"))
-    ventana_info.bind("<Configure>",ajustar_canvas)
+    ventana_empleados.bind("<Configure>", ajustar_canvas)
+
     ventana_empleados.mainloop()
 # Función para agregar datos a la base de datos
-def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso):
+def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso,nomina):
     for i, (dia, var) in enumerate(dias.items()):
         almacenar_fecha(i, var, dia, codigoEmpleado)  # Guarda las fechas seleccionadas
 
@@ -487,13 +499,20 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT COUNT(*) FROM Datos1 WHERE Codigo_Empleado = ?", (codigoEmpleado,))
+        cursor.execute("SELECT COUNT(*) FROM Datos1 WHERE Codigo_Empleado = ? AND periodo= ?", (codigoEmpleado,periodo))
         resultado = cursor.fetchone()
-
+        DF = "0"
+        # Iterar sobre los días festivos
+        for dia_festivo in dias_festivos:
+            if date.today() == dia_festivo:
+                DF = "1"
+                break  # Salimos del bucle si encontramos un día festivo
+        print(DF)
         if resultado[0] == 0:
             # Si no existe, insertar un nuevo registro
             for i, (dia, var) in enumerate(dias.items()):
-                print(descanso)
+                if dia in str(descanso) and var.get():
+                    DT[i]="1"
                 cursor.execute(
                     """
                     INSERT INTO Datos1 
@@ -502,7 +521,7 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                     """,
                     (
                         codigoEmpleado,
-                        "Sindicato",           # Tipo de cobro
+                        nomina,           # Tipo de cobro
                         dia,                   # Día de la semana
                         str(fechas_seleccionadas.get(dia, 0)),  # Asistencia del día
                         HE.get(i, "0"),         # Horas extra del día i
@@ -518,6 +537,8 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         else:
             # Si ya existe, realizar un update
             for i, (dia, var) in enumerate(dias.items()):
+                if dia in str(descanso) and var.get():
+                    DT[i]="1"
                 cursor.execute(
                     """
                     UPDATE Datos1 SET 
@@ -527,10 +548,10 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                     """,
                     (
                         fechas_seleccionadas.get(dia, 0),  # Asistencia del día
-                        HE.get(i, "0"),         # Horas extra del día i
+                        HE.get(i, ""),         # Horas extra del día i
                         DF,                    # Días festivos (DF) es fijo
-                        TE.get(i, "0"),         # Turnos extras del día i
-                        DT.get(i, "0"),         # Descansos trabajados del día i
+                        TE.get(i, ""),         # Turnos extras del día i
+                        DT.get(i, ""),         # Descansos trabajados del día i
                         aprovacion,            # Aprobación
                         codigoEmpleado,        # Código del empleado
                         dia,                   # Día de la semana
@@ -560,16 +581,16 @@ def checar_aprovacion(codigoEmpleado):
         return True
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo añadir o actualizar el dato: {e}")
-def check_dias(dia,codigoempleado):
+def check_dias(dia,codigoempleado,periodo):
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
         #print(codigoempleado)
         #print(dia)
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=?",codigoempleado,dia)
+        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia,periodo)
         resultado = cursor.fetchone()
-        #print(str(resultado))
+        print(str(resultado))
         if resultado == None:
             conexion.close()
             if dia == "S" or dia=="D":
@@ -584,27 +605,34 @@ def check_dias(dia,codigoempleado):
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo añadir o actualizar el dato: {e}")
 # Función para cambiar la opción seleccionada en el ComboBox
-def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv,depar):
+def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, depar):
     # Elimina todo el contenido actual del frame
     for widget in frame_dinamico.winfo_children():
         widget.destroy()
+
     # Etiquetas de encabezado de la tabla
     if tipo_opcion == "Confianza":
         periodo = obtener_periodo(1)
     else:
-        periodo= obtener_periodo(2)
+        periodo = obtener_periodo(2)
+
     for i, periodo in enumerate(periodo):
-        label1= tk.Label(frame_dinamico, text=periodo[2], font=('Arial', 10, 'bold'))
+        label1 = tk.Label(frame_dinamico, text=periodo[2], font=('Arial', 10, 'bold'))
         label1.grid(row=0, column=1, padx=5, pady=5)
+
     # Encabezados fijos y desplazables
-    headers_fijos = ['ID', 'Nombre', 'Puesto', 'Proyecto']
-    headers_scrollables = ['Días de la Semana','Comentario', 'Aprobar', 'Acción']
-    headers_dias=["Lunes","Martes", "Miercoles", "Jueves","Viernes", "Sabado", "Domingo",]
+    headers_fijos = ['ID', 'Nombre', 'Proyecto']
+    headers_scrollables = ['Días de la Semana', 'Comentario', 'Aprobar', 'Acción']
+    headers_dias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
+
     # Frame para las columnas fijas
     frame_fijo = tk.Frame(frame_dinamico)
-    frame_fijo.grid(row=2, column=0, sticky="nsew")
-    button_excel = tk.Button(frame_dinamico, text="generar reporte", command=lambda: excel_add(empleado_id))
+    frame_fijo.grid(row=2, column=0, sticky="n")
+
+    # Botón de generar reporte
+    button_excel = tk.Button(frame_dinamico, text="Generar reporte", command=lambda: excel_add(empleado_id,depar,tipo_opcion))
     button_excel.grid(row=4, column=0, sticky="w")
+
     # Crear el encabezado de las columnas fijas
     for i, header in enumerate(headers_fijos):
         label = tk.Label(frame_fijo, text=header, font=('Arial', 10, 'bold'))
@@ -612,7 +640,11 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv,dep
 
     # Canvas para las columnas desplazables
     canvas_scrollable = tk.Canvas(frame_dinamico)
-    canvas_scrollable.grid(row=2, column=1, sticky="w")
+    canvas_scrollable.grid(row=2, column=1, sticky="nsew")  # Ajustado para expandirse
+
+    # Configurar grid para que se expanda
+    frame_dinamico.grid_columnconfigure(1, weight=1)  # Columna 1 se expande
+    frame_dinamico.grid_rowconfigure(2, weight=1)     # Fila 2 se expande
 
     # Scrollbar horizontal
     scrollbar_horizontal = tk.Scrollbar(frame_dinamico, orient="horizontal", command=canvas_scrollable.xview)
@@ -627,33 +659,44 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv,dep
     canvas_scrollable.create_window((0, 0), window=frame_scrollable, anchor="nw")
     canvas_scrollable.configure(xscrollcommand=scrollbar_horizontal.set, yscrollcommand=scrollbar_vertical.set)
 
+    # Ajustar la región de scroll del canvas
+    def ajustar_scroll(event):
+        canvas_scrollable.configure(scrollregion=canvas_scrollable.bbox("all"))
+
+    frame_scrollable.bind("<Configure>", ajustar_scroll)
+
     # Crear el encabezado de las columnas desplazables
     for i, header in enumerate(headers_scrollables):
         label = tk.Label(frame_scrollable, text=header, font=('Arial', 10, 'bold'))
         if header == "Días de la Semana":
-            label.grid(row=0, column=i, padx=5, pady=10,columnspan=7)
+            label.grid(row=0, column=i, padx=5, pady=10, columnspan=7)
         else:
             label.grid(row=0, column=i+6, padx=5, pady=10)
-    frame_fijo2= tk.Frame(frame_scrollable)
+
+    frame_fijo2 = tk.Frame(frame_scrollable)
     frame_fijo2.grid(row=1, column=0, sticky="nsew")
-    for i,header in enumerate(headers_dias):
-        label=tk.Label(frame_scrollable,text=header,font=('Arial',10,'bold'))
-        label.grid(row=2, column=i, padx=5,)
+
+    for i, header in enumerate(headers_dias):
+        label = tk.Label(frame_scrollable, text=header, font=('Arial', 10, 'bold'))
+        label.grid(row=2, column=i, padx=5)
+
     # Crear las filas de datos
-    tk.Label(frame_fijo,text="----------------------------------------").grid(row=1, column=0,columnspan=4, padx=5, pady=3)
+    tk.Label(frame_fijo, text="----------------------------------------").grid(row=1, column=0, columnspan=4, padx=5, pady=3)
+
     for index, empleado in enumerate(empleados, start=3):
         if empleado[7] == depar:
             empleado_id = empleado[0]
-            nombre = empleado[2] + " " + empleado[3] + " " 
-            puesto = empleado[1]
+            nombre = empleado[2] + " " + empleado[3]
             proyecto = empleado[7]
-            descanso={empleado[0],empleado[5]}
-        # Mostrar datos en columnas fijas
+            Nomina = empleado[1]
+            descanso = {empleado[0], empleado[5]}
+
+            # Mostrar datos en columnas fijas
             tk.Label(frame_fijo, text=empleado_id).grid(row=index, column=0, padx=5, pady=14)
-            tk.Label(frame_fijo, text=nombre).grid(row=index, column=1, padx=5, pady=14)
-            tk.Label(frame_fijo, text=puesto).grid(row=index, column=2, padx=5, pady=14)
-            tk.Label(frame_fijo, text=proyecto).grid(row=index, column=3, padx=5, pady=14)
-        # Checkboxes para los días de la semana (según la opción seleccionada)
+            tk.Label(frame_fijo, text=nombre, font=('Arial', 8, 'bold')).grid(row=index, column=1, padx=5, pady=14)
+            tk.Label(frame_fijo, text=proyecto).grid(row=index, column=2, padx=5, pady=14)
+
+            # Crear checkbox para los días de la semana
             if tipo_opcion == "Confianza":
                 dias_seleccionados = {
                     'LUNES': tk.IntVar(value=1),
@@ -664,7 +707,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv,dep
                     'SABADO': tk.IntVar(),
                     'DOMINGO': tk.IntVar()
                 }
-            else:  # Si es "Sindicato", mostrar días de dos semanas
+            else:
                 dias_seleccionados = {
                     'L1': tk.IntVar(value=1),
                     'M1': tk.IntVar(value=1),
@@ -681,77 +724,117 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv,dep
                     'S2': tk.IntVar(),
                     'D2': tk.IntVar(),
                 }
-                #print(dias_seleccionados)
+
             for i, (dia, var) in enumerate(dias_seleccionados.items()):
-                a=tk.IntVar(value=check_dias(dia,empleado_id))
-                dias_seleccionados[dia]=a
-            #print(dias_seleccionados)
-            frames=[]
+                a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
+                dias_seleccionados[dia] = a
+            frames = []
             entries_HE = {}  # Diccionario para almacenar los widgets Entry de HE
             entries_DT = {}  # Diccionario para almacenar los widgets Entry de DT
             entries_TE = {}  # Diccionario para almacenar los widgets Entry de TE
 
             for i, (dia, var) in enumerate(dias_seleccionados.items()):
-                frame = tk.Frame(frame_scrollable,borderwidth=1)
+                frame = tk.Frame(frame_scrollable, borderwidth=1)
                 frame.grid(row=index, column=i)
                 frames.append(frame)
+
             for i, (dia, var) in enumerate(dias_seleccionados.items()):
                 checkbox = tk.Checkbutton(frames[i], variable=var, command=lambda i=i, var=var, dia=dia, emp_id=empleado_id: almacenar_fecha(i, var, dia, emp_id))
-                checkbox.grid(row=0,column=0, pady=1)
+                checkbox.grid(row=0, column=0, pady=1)
                 entries_HE[i] = tk.Entry(frames[i], width=5)
                 entries_DT[i] = tk.Entry(frames[i], width=5)
                 entries_TE[i] = tk.Entry(frames[i], width=5)
-
                 entries_DT[i].grid(row=1, column=0)
                 entries_HE[i].grid(row=0, column=1)
                 entries_TE[i].grid(row=1, column=1)
 
-                i=i+1
-                if i >6:
-                    i=0
-
-            # Otros campos (Horas Extra, Días Festivos, etc.)
+    # Otros campos (Comentario, Aprobar, Añadir)
             entry_DF = tk.Entry(frame_scrollable,width=5)
-            entry_comentario = tk.Entry(frame_scrollable)
-            entry_comentario.grid(row=index, column=7)
-            if fv:
-                # Checkbox "Aprobar"
-                #print(empleado_id)
+            if len(dias_seleccionados.items())>7:
+                entry_comentario = tk.Entry(frame_scrollable)
+                entry_comentario.grid(row=index, column=len(dias_seleccionados.items()))
                 if checar_aprovacion(empleado_id):
-                    var_aprobar = tk.IntVar(value=1)
+                        var_aprobar = tk.IntVar(value=1)
                 else:
-                    var_aprobar = tk.IntVar()
-                checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
-                checkbox_aprobar.grid(row=index, column=8)
+                        var_aprobar = tk.IntVar()
+                if fv:
+                    # Checkbox "Aprobar"
+                    #print(empleado_id)
+                    checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
+                    checkbox_aprobar.grid(row=index, column=len(dias_seleccionados.items())+1)
 
-                # Botón "Añadir"
-                button_add = tk.Button(frame_scrollable, text="Añadir")
-                button_add.grid(row=index, column=9)
-                button_add["command"] = lambda dias=dias_seleccionados,HE_entries=entries_HE,DF=entry_DF,TE_entries=entries_TE,DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, var2=empleado_id: agregar_dato(
-                    {dia: var for dia, var in dias.items()},
+                    # Botón "Añadir"
+                    button_add = tk.Button(frame_scrollable, text="Añadir")
+                    button_add.grid(row=index, column=len(dias_seleccionados.items())+2)
+                    button_add["command"] = lambda dias=dias_seleccionados,HE_entries=entries_HE,DF=entry_DF,TE_entries=entries_TE,DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, var2=empleado_id: agregar_dato(
+                        {dia: var for dia, var in dias.items()},
+                        comentario.get(),
+                        periodo[2],
+                        var_aprobar.get(),
+                        var2,{i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
+                    DF.get(), 
+                    {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
+                    {i: DT_entries[i].get() for i in DT_entries},
+                    descanso,Nomina
+                    )
+                else:
+                    # Botón "Añadir"
+                    button_add = tk.Button(frame_scrollable, text="Añadir")
+                    button_add.grid(row=index, column=len(dias_seleccionados.items())+2)
+                    button_add["command"] = lambda dias=dias_seleccionados, HE_entries=entries_HE, DF=entry_DF, TE_entries=entries_TE, DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, emp_id=empleado_id: agregar_dato(
+                    {dia: var.get() for dia, var in dias.items()},
                     comentario.get(),
                     periodo[2],
                     var_aprobar.get(),
-                    var2,{i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
-                DF.get(), 
-                {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
-                {i: DT_entries[i].get() for i in DT_entries},
-                descanso
+                    emp_id, 
+                    {i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
+                    DF.get(), 
+                    {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
+                    {i: DT_entries[i].get() for i in DT_entries},   # Obtiene los valores de DT por cada día
+                    descanso,Nomina
                 )
             else:
-                # Botón "Añadir"
-                button_add["command"] = lambda dias=dias_seleccionados, HE_entries=entries_HE, DF=entry_DF, TE_entries=entries_TE, DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, emp_id=empleado_id: agregar_dato(
-                {dia: var.get() for dia, var in dias.items()},
-                comentario.get(),
-                periodo[2],
-                var_aprobar.get(),
-                emp_id, 
-                {i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
-                DF.get(), 
-                {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
-                {i: DT_entries[i].get() for i in DT_entries},   # Obtiene los valores de DT por cada día
-                descanso
-            )
+                entry_comentario = tk.Entry(frame_scrollable)
+                entry_comentario.grid(row=index, column=7)
+                if checar_aprovacion(empleado_id):
+                        var_aprobar = tk.IntVar(value=1)
+                else:
+                        var_aprobar = tk.IntVar()
+                if fv:
+                    # Checkbox "Aprobar"
+                    checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
+                    checkbox_aprobar.grid(row=index, column=8)
+
+                    # Botón "Añadir"
+                    button_add = tk.Button(frame_scrollable, text="Añadir")
+                    button_add.grid(row=index, column=9)
+                    button_add["command"] = lambda dias=dias_seleccionados,HE_entries=entries_HE,DF=entry_DF,TE_entries=entries_TE,DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, var2=empleado_id: agregar_dato(
+                        {dia: var for dia, var in dias.items()},
+                        comentario.get(),
+                        periodo[2],
+                        var_aprobar.get(),
+                        var2,{i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
+                    DF.get(), 
+                    {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
+                    {i: DT_entries[i].get() for i in DT_entries},
+                    descanso,Nomina
+                    )
+                else:
+                    # Botón "Añadir"
+                    button_add = tk.Button(frame_scrollable, text="Añadir")
+                    button_add.grid(row=index, column=9)
+                    button_add["command"] = lambda dias=dias_seleccionados, HE_entries=entries_HE, DF=entry_DF, TE_entries=entries_TE, DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, emp_id=empleado_id: agregar_dato(
+                    {dia: var.get() for dia, var in dias.items()},
+                    comentario.get(),
+                    periodo[2],
+                    var_aprobar.get(),
+                    emp_id, 
+                    {i: HE_entries[i].get() for i in HE_entries},  # Obtiene los valores de HE por cada día
+                    DF.get(), 
+                    {i: TE_entries[i].get() for i in TE_entries},  # Obtiene los valores de TE por cada día
+                    {i: DT_entries[i].get() for i in DT_entries},   # Obtiene los valores de DT por cada día
+                    descanso,Nomina
+                )
          
 # Actualizar el canvas con el tamaño correcto
     frame_scrollable.update_idletasks()
