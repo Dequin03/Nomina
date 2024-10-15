@@ -20,13 +20,36 @@ fechas=[]
 departamentos=[]
 descanso={}
 year=datetime.now().year
+month=datetime.now().month
+day=datetime.now().day
 dias_festivos=[date(year,1,1),date(year,5,1),date(year,9,16),date(year,12,25)]
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 ip=s.getsockname()[0]
 print(ip)
 s.close()
-
+def calcular_fechas():
+    if ".333" in str(year/6):
+        dias_festivos.append(date(year,10,1))
+    d = date(year, 2, 1)
+    offset = 0-d.weekday() #weekday = 0 means monday
+    if offset < 0:
+        offset+=7
+    dias_festivos.append(date(year,2,1+offset))
+    d=date(year,3,14)
+    offset=0+-d.weekday()
+    if offset < 0:
+        offset+=7
+    dias_festivos.append(date(year,3,14+offset))
+    d=date(year,11,14)
+    offset=0+-d.weekday()
+    if offset < 0:
+        offset+=7
+    dias_festivos.append(date(year,11,14+offset))
+    return d+timedelta(offset)
+calcular_fechas()
+for i in dias_festivos:
+    print(i.strftime("%d-%m-%Y"))
 # Define your encryption key here (equivalente a KEY_ENCRYPT_DECRYPT en el código original)
 KEY_ENCRYPT_DECRYPT = "r3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4rr3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4r"
 mac = get_mac()
@@ -173,14 +196,14 @@ def verificar_asistencias(codigoEmpleado):
         return asistencia_modificada if asistencia_modificada else None  # Asegurarse de devolver None si no hay datos
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo añadir o actualizar el dato: {e}")
-def excel_add(id,depar,tipo):
+def excel_add(id,depar,tipo,periodo):
     # Cargar el archivo de Excel
     ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato.xlsx"
     workbook = load_workbook(ruta_excel)
     
     # Obtener la hoja de trabajo
     sheet = workbook.active 
-
+    x=0
     empleados = obtener_empleados(depar,tipo)
     nombres = []
     ape=[]
@@ -188,14 +211,15 @@ def excel_add(id,depar,tipo):
 
     # Extraer el nombre completo del empleado
     for empleado in empleados:
-        nombre_completo = f"{empleado[1]}"
+        nombre_completo = f"{empleado[2]}"
         nombres.append(nombre_completo)
-        ap=f"{empleado[2]}"
+        ap=f"{empleado[3]}"
         ape.append(ap)
-        ap2=f"{empleado[3]}"
+        ap2=f"{empleado[4]}"
         ape2.append(ap2)
+        x+=1
 
-    for i in range(4, id + 4):
+    for i in range(4, x + 4):
         Dato = verificar_asistencias(i - 3)
         
         if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
@@ -255,11 +279,12 @@ def excel_add(id,depar,tipo):
         sheet.column_dimensions[col_letter].width = adjusted_width
 
     # Guardar el archivo de Excel actualizado
-    workbook.save(ruta_excel)
-
+    workbook.save("C:\\Users\\usuario\\Downloads\\Nomina\\Formatollenado.xlsx")
+    periodo=periodo.replace(" ", "_")
+    periodo=periodo.replace("/", "-")
     # Convertir a PDF usando pandas y matplotlib
-    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato.xlsx"
-    pdf_output = "/output/Reporte.pdf"
+    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formatollenado.xlsx"
+    pdf_output = "C:\\Users\\usuario\\Downloads\\Nomina\\output\\Reporte_"+periodo
     excel_to_pdf(ruta_excel, pdf_output)   
 def excel_to_pdf(excel_file, pdf_file):
     # Leer el archivo de Excel
@@ -268,7 +293,7 @@ def excel_to_pdf(excel_file, pdf_file):
 
     # Crear un documento PDF con orientación horizontal y márgenes pequeños
     pdf = SimpleDocTemplate(
-        pdf_file, 
+        pdf_file+".pdf", 
         pagesize=landscape(letter), 
         leftMargin=10, 
         rightMargin=10, 
@@ -630,7 +655,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
     frame_fijo.grid(row=2, column=0, sticky="n")
 
     # Botón de generar reporte
-    button_excel = tk.Button(frame_dinamico, text="Generar reporte", command=lambda: excel_add(empleado_id,depar,tipo_opcion))
+    button_excel = tk.Button(frame_dinamico, text="Generar reporte", command=lambda: excel_add(empleado_id,depar,tipo_opcion,periodo[2]))
     button_excel.grid(row=4, column=0, sticky="w")
 
     # Crear el encabezado de las columnas fijas
