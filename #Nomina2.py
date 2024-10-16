@@ -23,10 +23,10 @@ year=datetime.now().year
 month=datetime.now().month
 day=datetime.now().day
 dias_festivos=[date(year,1,1),date(year,5,1),date(year,9,16),date(year,12,25)]
+dias_semana={0:"LUNES",1:"MARTES",2:"MIERCOLES",3:"JUEVES",4:"VIERNES",5:"SABADO",6:"DOMINGO",}
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 ip=s.getsockname()[0]
-print(ip)
 s.close()
 def calcular_fechas():
     if ".333" in str(year/6):
@@ -48,13 +48,20 @@ def calcular_fechas():
     dias_festivos.append(date(year,11,14+offset))
     return d+timedelta(offset)
 calcular_fechas()
-for i in dias_festivos:
-    print(i.strftime("%d-%m-%Y"))
 # Define your encryption key here (equivalente a KEY_ENCRYPT_DECRYPT en el código original)
 KEY_ENCRYPT_DECRYPT = "r3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4rr3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4r"
 mac = get_mac()
 user=''
 f=3
+def sortdias(dias):
+    a={}
+    for i,dia in enumerate(dias):
+        if dia ==5 or dia ==6:
+            a.update({(dias_semana[dia],i):tk.IntVar(value=1)})
+        else:
+            a.update({(dias_semana[dia],i):tk.IntVar(value=0)})
+    return a 
+
 def encrypt(plain_text):
     str_out = ""
 
@@ -111,38 +118,43 @@ def conectar_bd_datos():
     )
     cursor = conexion.cursor()
     return conexion, cursor
-def obtener_quincenas(year):
-    for i in range(1,25):
-        print(i)
-        month = (i - 1) // 2 + 1  # Calcula el mes (2 quincenas por mes)
-        if i % 2 == 1:
-            # Primera quincena (del 1 al 15)
-            inicio = date(year, month, 1)
-            fin = date(year, month, 15)
-            print(inicio,fin)
-        else:
-            # Segunda quincena (del 16 al último día del mes)
-            inicio = date(year, month, 16)
-            ultimo_dia = (inicio.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
-            fin = date(year, month, ultimo_dia)
-            print(inicio,fin)
-    return inicio, fin
-def almacenar_fecha(dia_semana, var_checkbox, dia_texto, empleado_ids):
+def obtener_quincenas():
+    a=[]
+    if day <= 15:
+        # Primera quincena (del 1 al 15)
+        inicio = date(year, month, 1)
+        fin = date(year, month, 15)
+        for i in range(15):
+            a.append((inicio+timedelta(i)).weekday())
+    else:
+        # Segunda quincena (del 16 al último día del mes)
+        inicio = date(year, month, 16)
+        ultimo_dia = (inicio.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
+        fin = date(year, month, ultimo_dia)
+        for i in range(ultimo_dia):
+            a.append((inicio+timedelta(i)).weekday())    
+    return a
+def almacenar_fecha(dia_semana, var_checkbox, dia_texto, nomina):
     # Obtener el día de la semana actual
     hoy = datetime.now()
     # Calcular la fecha del día seleccionado
-    fecha = hoy - timedelta(days=hoy.weekday()) + timedelta(days=dia_semana)
+    if nomina == "2" and day <=15:
+        fecha = hoy - timedelta(days=day) + timedelta(days=dia_semana+1)
+    elif nomina=="2" and day>15:
+        fecha=16+timedelta(days=dias_semana)
+    else:
+        fecha = hoy - timedelta(days=hoy.weekday()) + timedelta(days=dia_semana)
     # Formatear la fecha como DD/MM/AAAA
     fecha_formateada = fecha.strftime('%d/%m/%Y')
     #print(var_checkbox.get())
     if var_checkbox.get()==1:
         # Si el checkbox está marcado, agregamos la fecha
-        fechas_seleccionadas[dia_texto] = fecha_formateada
+        fechas_seleccionadas[dia_texto,dia_semana] = fecha_formateada
         #print(f"Fecha seleccionada: {fecha_formateada}")
     else:
         # Si se desmarca, quitamos la fecha de la lista
-        if dia_texto in fechas_seleccionadas:
-            del fechas_seleccionadas[dia_texto]
+        if (dia_texto,dia_semana) in fechas_seleccionadas:
+            del fechas_seleccionadas[dia_texto,dia_semana]
             #print(f"Fecha deseleccionada: {fecha_formateada}")
 def excel():
     hoy = datetime.now()
@@ -518,8 +530,8 @@ def abrir_ventana_principal(username, tipo_opcion):
 # Función para agregar datos a la base de datos
 def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso,nomina):
     for i, (dia, var) in enumerate(dias.items()):
-        almacenar_fecha(i, var, dia, codigoEmpleado)  # Guarda las fechas seleccionadas
-
+        almacenar_fecha(i, var, dia[0], nomina)  # Guarda las fechas seleccionadas
+    print(fechas_seleccionadas)
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
@@ -536,7 +548,7 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         if resultado[0] == 0:
             # Si no existe, insertar un nuevo registro
             for i, (dia, var) in enumerate(dias.items()):
-                if dia in str(descanso) and var.get():
+                if dia[0] in str(descanso) and var.get():
                     DT[i]="1"
                 cursor.execute(
                     """
@@ -547,8 +559,8 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                     (
                         codigoEmpleado,
                         nomina,           # Tipo de cobro
-                        dia,                   # Día de la semana
-                        str(fechas_seleccionadas.get(dia, 0)),  # Asistencia del día
+                        dia[0],                   # Día de la semana
+                        str(fechas_seleccionadas.get((dia[0],i), 0)),  # Asistencia del día
                         HE.get(i, "0"),         # Horas extra del día i
                         DF,                    # Días festivos (DF) es fijo
                         TE.get(i, "0"),         # Turnos extras del día i
@@ -562,24 +574,24 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         else:
             # Si ya existe, realizar un update
             for i, (dia, var) in enumerate(dias.items()):
-                if dia in str(descanso) and var.get():
+                if dia[0] in str(descanso) and var.get():
                     DT[i]="1"
                 cursor.execute(
                     """
                     UPDATE Datos1 SET 
-                    Dia_Asistencia = ?, 
+                    Dia_Asistencia = ?,
                     Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
                     WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
                     """,
                     (
-                        fechas_seleccionadas.get(dia, 0),  # Asistencia del día
+                        fechas_seleccionadas.get((dia[0],i), 0),  # Asistencia del día
                         HE.get(i, ""),         # Horas extra del día i
                         DF,                    # Días festivos (DF) es fijo
                         TE.get(i, ""),         # Turnos extras del día i
                         DT.get(i, ""),         # Descansos trabajados del día i
                         aprovacion,            # Aprobación
                         codigoEmpleado,        # Código del empleado
-                        dia,                   # Día de la semana
+                        dia[0],                   # Día de la semana
                         periodo                # Periodo actual
                     )
                 )
@@ -613,12 +625,11 @@ def check_dias(dia,codigoempleado,periodo):
         #print(codigoempleado)
         #print(dia)
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia,periodo)
+        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia[0],periodo)
         resultado = cursor.fetchone()
-        print(str(resultado))
         if resultado == None:
             conexion.close()
-            if dia == "S" or dia=="D":
+            if dia == "SABADO" or dia=="DOMINGO":
                 return 0
             return 1
         elif "/" not in str(resultado):
@@ -700,10 +711,15 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
 
     frame_fijo2 = tk.Frame(frame_scrollable)
     frame_fijo2.grid(row=1, column=0, sticky="nsew")
-
-    for i, header in enumerate(headers_dias):
-        label = tk.Label(frame_scrollable, text=header, font=('Arial', 10, 'bold'))
-        label.grid(row=2, column=i, padx=5)
+    diasq=obtener_quincenas()
+    if tipo_opcion == "Confianza":
+        for i, header in enumerate(headers_dias):
+            label = tk.Label(frame_scrollable, text=header, font=('Arial', 10, 'bold'))
+            label.grid(row=2, column=i, padx=5)
+    else:
+        for i, header in enumerate(diasq):
+            label = tk.Label(frame_scrollable, text=dias_semana[header], font=('Arial', 10, 'bold'))
+            label.grid(row=2, column=i, padx=5)
 
     # Crear las filas de datos
     tk.Label(frame_fijo, text="----------------------------------------").grid(row=1, column=0, columnspan=4, padx=5, pady=3)
@@ -732,27 +748,15 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     'SABADO': tk.IntVar(),
                     'DOMINGO': tk.IntVar()
                 }
+                for i, (dia, var) in enumerate(dias_seleccionados.items()):
+                    a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
+                    dias_seleccionados[dia] = a
             else:
-                dias_seleccionados = {
-                    'L1': tk.IntVar(value=1),
-                    'M1': tk.IntVar(value=1),
-                    'MM1': tk.IntVar(value=1),
-                    'J1': tk.IntVar(value=1),
-                    'V1': tk.IntVar(value=1),
-                    'S1': tk.IntVar(),
-                    'D1': tk.IntVar(),
-                    'L2': tk.IntVar(value=1),
-                    'M2': tk.IntVar(value=1),
-                    'M2': tk.IntVar(value=1),
-                    'J2': tk.IntVar(value=1),
-                    'V2': tk.IntVar(value=1),
-                    'S2': tk.IntVar(),
-                    'D2': tk.IntVar(),
-                }
-
-            for i, (dia, var) in enumerate(dias_seleccionados.items()):
-                a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
-                dias_seleccionados[dia] = a
+                dias_seleccionados = sortdias(diasq)
+                
+                for i, (dia, var) in enumerate(dias_seleccionados.items()):
+                    a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
+                    dias_seleccionados[dia] = a
             frames = []
             entries_HE = {}  # Diccionario para almacenar los widgets Entry de HE
             entries_DT = {}  # Diccionario para almacenar los widgets Entry de DT
@@ -764,11 +768,14 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                 frames.append(frame)
 
             for i, (dia, var) in enumerate(dias_seleccionados.items()):
-                checkbox = tk.Checkbutton(frames[i], variable=var, command=lambda i=i, var=var, dia=dia, emp_id=empleado_id: almacenar_fecha(i, var, dia, emp_id))
+                checkbox = tk.Checkbutton(frames[i], variable=var, command=lambda i=i, var=var, dia=dia, emp_id=empleado_id: almacenar_fecha(i, var, dia, Nomina))
                 checkbox.grid(row=0, column=0, pady=1)
                 entries_HE[i] = tk.Entry(frames[i], width=5)
                 entries_DT[i] = tk.Entry(frames[i], width=5)
                 entries_TE[i] = tk.Entry(frames[i], width=5)
+                entries_HE[i].insert(0, "0")
+                entries_DT[i].insert(0, "0") 
+                entries_TE[i].insert(0, "0")  
                 entries_DT[i].grid(row=1, column=0)
                 entries_HE[i].grid(row=0, column=1)
                 entries_TE[i].grid(row=1, column=1)
