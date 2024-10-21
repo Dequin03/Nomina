@@ -22,6 +22,7 @@ descanso={}
 year=datetime.now().year
 month=datetime.now().month
 day=datetime.now().day
+todos={}
 dias_festivos=[date(year,1,1),date(year,5,1),date(year,9,16),date(year,12,25)]
 dias_semana={0:"LUNES",1:"MARTES",2:"MIERCOLES",3:"JUEVES",4:"VIERNES",5:"SABADO",6:"DOMINGO",}
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -131,7 +132,7 @@ def obtener_quincenas():
         inicio = date(year, month, 16)
         ultimo_dia = (inicio.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
         fin = date(year, month, ultimo_dia)
-        for i in range(ultimo_dia):
+        for i in range(ultimo_dia-15):
             a.append((inicio+timedelta(i)).weekday())    
     return a
 def almacenar_fecha(dia_semana, var_checkbox, dia_texto, nomina):
@@ -141,9 +142,9 @@ def almacenar_fecha(dia_semana, var_checkbox, dia_texto, nomina):
     if nomina == "2" and day <=15:
         fecha = hoy - timedelta(days=day) + timedelta(days=dia_semana+1)
     elif nomina=="2" and day>15:
-        fecha=16+timedelta(days=dias_semana)
+        fecha=datetime(year,month,16)+timedelta(days=dia_semana)
     else:
-        fecha = hoy - timedelta(days=hoy.weekday()) + timedelta(days=dia_semana)
+        fecha = hoy - timedelta(days=hoy.weekday()) + timedelta(days=dia_semana+0)
     # Formatear la fecha como DD/MM/AAAA
     fecha_formateada = fecha.strftime('%d/%m/%Y')
     #print(var_checkbox.get())
@@ -529,9 +530,12 @@ def abrir_ventana_principal(username, tipo_opcion):
     ventana_empleados.mainloop()
 # Función para agregar datos a la base de datos
 def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso,nomina):
-    for i, (dia, var) in enumerate(dias.items()):
-        almacenar_fecha(i, var, dia[0], nomina)  # Guarda las fechas seleccionadas
-    print(fechas_seleccionadas)
+    if nomina==2:
+        for i, ((dia,index), var) in enumerate(dias.items()):
+            almacenar_fecha(i, var, dia, nomina)  # Guarda las fechas seleccionadas
+    else:
+        for i, (dia, var) in enumerate(dias.items()):
+            almacenar_fecha(i, var, dia, nomina)  # Guarda las fechas seleccionadas
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
@@ -547,55 +551,107 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         print(DF)
         if resultado[0] == 0:
             # Si no existe, insertar un nuevo registro
-            for i, (dia, var) in enumerate(dias.items()):
-                if dia[0] in str(descanso) and var.get():
-                    DT[i]="1"
-                cursor.execute(
-                    """
-                    INSERT INTO Datos1 
-                    (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        codigoEmpleado,
-                        nomina,           # Tipo de cobro
-                        dia[0],                   # Día de la semana
-                        str(fechas_seleccionadas.get((dia[0],i), 0)),  # Asistencia del día
-                        HE.get(i, "0"),         # Horas extra del día i
-                        DF,                    # Días festivos (DF) es fijo
-                        TE.get(i, "0"),         # Turnos extras del día i
-                        DT.get(i, "0"),         # Descansos trabajados del día i
-                        periodo,               # Periodo actual
-                        aprovacion             # Aprobación
+            print("INSERT")
+            print(HE)
+            if nomina==2:
+                for i, ((dia,index), var) in enumerate(dias.items()):
+                    if dia in str(descanso) and var.get():
+                        DT[i]="1"
+                    cursor.execute(
+                        """
+                        INSERT INTO Datos1 
+                        (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            codigoEmpleado,
+                            nomina,           # Tipo de cobro
+                            dia,                   # Día de la semana
+                            str(fechas_seleccionadas.get((dia,i), 0)),  # Asistencia del día
+                            HE.get(i, "0"),         # Horas extra del día i
+                            DF,                    # Días festivos (DF) es fijo
+                            TE.get(i, "0"),         # Turnos extras del día i
+                            DT.get(i, "0"),         # Descansos trabajados del día i
+                            periodo,               # Periodo actual
+                            aprovacion             # Aprobación
+                        )
                     )
-                )
-                conexion.commit()
+            else:
+                for i, (dia, var) in enumerate(dias.items()):
+                    if dia in str(descanso) and var.get():
+                        DT[i]="1"
+                    cursor.execute(
+                        """
+                        INSERT INTO Datos1 
+                        (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            codigoEmpleado,
+                            nomina,           # Tipo de cobro
+                            dia,                   # Día de la semana
+                            str(fechas_seleccionadas.get((dia,i), 0)),  # Asistencia del día
+                            HE.get(i, "0"),         # Horas extra del día i
+                            DF,                    # Días festivos (DF) es fijo
+                            TE.get(i, "0"),         # Turnos extras del día i
+                            DT.get(i, "0"),         # Descansos trabajados del día i
+                            periodo,               # Periodo actual
+                            aprovacion             # Aprobación
+                        )
+                    )
+            conexion.commit()
             messagebox.showinfo("Éxito", "Datos añadidos correctamente.")
         else:
             # Si ya existe, realizar un update
-            for i, (dia, var) in enumerate(dias.items()):
-                if dia[0] in str(descanso) and var.get():
-                    DT[i]="1"
-                cursor.execute(
-                    """
-                    UPDATE Datos1 SET 
-                    Dia_Asistencia = ?,
-                    Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
-                    WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
-                    """,
-                    (
-                        fechas_seleccionadas.get((dia[0],i), 0),  # Asistencia del día
-                        HE.get(i, ""),         # Horas extra del día i
-                        DF,                    # Días festivos (DF) es fijo
-                        TE.get(i, ""),         # Turnos extras del día i
-                        DT.get(i, ""),         # Descansos trabajados del día i
-                        aprovacion,            # Aprobación
-                        codigoEmpleado,        # Código del empleado
-                        dia[0],                   # Día de la semana
-                        periodo                # Periodo actual
+            print("UPDATE")
+            print(HE)
+            if nomina==2:
+                for i, ((dia,index), var) in enumerate(dias.items()):
+                    if dia in str(descanso) and var.get():
+                        DT[i]="1"
+                    cursor.execute(
+                        """
+                        UPDATE Datos1 SET 
+                        Dia_Asistencia = ?,
+                        Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
+                        WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
+                        """,
+                        (
+                            str(fechas_seleccionadas.get((dia,i), 0)),  # Asistencia del día
+                            HE.get(i, ""),         # Horas extra del día i
+                            DF,                    # Días festivos (DF) es fijo
+                            TE.get(i, ""),         # Turnos extras del día i
+                            DT.get(i, ""),         # Descansos trabajados del día i
+                            aprovacion,            # Aprobación
+                            codigoEmpleado,        # Código del empleado
+                            dia,                   # Día de la semana
+                            periodo                # Periodo actual
+                        )
                     )
-                )
-                conexion.commit()
+            else:
+                for i, (dia, var) in enumerate(dias.items()):
+                    if dia in str(descanso) and var.get():
+                        DT[i]="1"
+                    cursor.execute(
+                        """
+                        UPDATE Datos1 SET 
+                        Dia_Asistencia = ?,
+                        Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
+                        WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
+                        """,
+                        (
+                            str(fechas_seleccionadas.get((dia,i), 0)),  # Asistencia del día
+                            HE.get(i, ""),         # Horas extra del día i
+                            DF,                    # Días festivos (DF) es fijo
+                            TE.get(i, ""),         # Turnos extras del día i
+                            DT.get(i, ""),         # Descansos trabajados del día i
+                            aprovacion,            # Aprobación
+                            codigoEmpleado,        # Código del empleado
+                            dia,                   # Día de la semana
+                            periodo                # Periodo actual
+                        )
+                    )
+            conexion.commit()
             messagebox.showinfo("Éxito", "Datos actualizados correctamente.")
 
         conexion.close()
@@ -655,7 +711,9 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
     for i, periodo in enumerate(periodo):
         label1 = tk.Label(frame_dinamico, text=periodo[2], font=('Arial', 10, 'bold'))
         label1.grid(row=0, column=1, padx=5, pady=5)
-
+    entries_HE = {}  # Diccionario para almacenar los widgets Entry de HE
+    entries_DT = {}  # Diccionario para almacenar los widgets Entry de DT
+    entries_TE = {}  # Diccionario para almacenar los widgets Entry de TE
     # Encabezados fijos y desplazables
     headers_fijos = ['ID', 'Nombre', 'Proyecto']
     headers_scrollables = ['Días de la Semana', 'Comentario', 'Aprobar', 'Acción']
@@ -723,7 +781,9 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
 
     # Crear las filas de datos
     tk.Label(frame_fijo, text="----------------------------------------").grid(row=1, column=0, columnspan=4, padx=5, pady=3)
-
+    dias_seleccionados={}
+    dias_seleccionados.clear()
+    todos.clear()
     for index, empleado in enumerate(empleados, start=3):
         if empleado[7] == depar:
             empleado_id = empleado[0]
@@ -736,7 +796,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             tk.Label(frame_fijo, text=empleado_id).grid(row=index, column=0, padx=5, pady=14)
             tk.Label(frame_fijo, text=nombre, font=('Arial', 8, 'bold')).grid(row=index, column=1, padx=5, pady=14)
             tk.Label(frame_fijo, text=proyecto).grid(row=index, column=2, padx=5, pady=14)
-
+            dias_seleccionados={}
             # Crear checkbox para los días de la semana
             if tipo_opcion == "Confianza":
                 dias_seleccionados = {
@@ -758,9 +818,6 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
                     dias_seleccionados[dia] = a
             frames = []
-            entries_HE = {}  # Diccionario para almacenar los widgets Entry de HE
-            entries_DT = {}  # Diccionario para almacenar los widgets Entry de DT
-            entries_TE = {}  # Diccionario para almacenar los widgets Entry de TE
 
             for i, (dia, var) in enumerate(dias_seleccionados.items()):
                 frame = tk.Frame(frame_scrollable, borderwidth=1)
@@ -779,8 +836,6 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                 entries_DT[i].grid(row=1, column=0)
                 entries_HE[i].grid(row=0, column=1)
                 entries_TE[i].grid(row=1, column=1)
-
-    # Otros campos (Comentario, Aprobar, Añadir)
             entry_DF = tk.Entry(frame_scrollable,width=5)
             if len(dias_seleccionados.items())>7:
                 entry_comentario = tk.Entry(frame_scrollable)
@@ -813,6 +868,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     # Botón "Añadir"
                     button_add = tk.Button(frame_scrollable, text="Añadir")
                     button_add.grid(row=index, column=len(dias_seleccionados.items())+2)
+                    
                     button_add["command"] = lambda dias=dias_seleccionados, HE_entries=entries_HE, DF=entry_DF, TE_entries=entries_TE, DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, emp_id=empleado_id: agregar_dato(
                     {dia: var.get() for dia, var in dias.items()},
                     comentario.get(),
@@ -840,6 +896,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     # Botón "Añadir"
                     button_add = tk.Button(frame_scrollable, text="Añadir")
                     button_add.grid(row=index, column=9)
+                    
                     button_add["command"] = lambda dias=dias_seleccionados,HE_entries=entries_HE,DF=entry_DF,TE_entries=entries_TE,DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, var2=empleado_id: agregar_dato(
                         {dia: var for dia, var in dias.items()},
                         comentario.get(),
@@ -855,8 +912,9 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     # Botón "Añadir"
                     button_add = tk.Button(frame_scrollable, text="Añadir")
                     button_add.grid(row=index, column=9)
+                    
                     button_add["command"] = lambda dias=dias_seleccionados, HE_entries=entries_HE, DF=entry_DF, TE_entries=entries_TE, DT_entries=entries_DT, comentario=entry_comentario, var_aprobar=var_aprobar, emp_id=empleado_id: agregar_dato(
-                    {dia: var.get() for dia, var in dias.items()},
+                    {dia: var for dia, var in dias.items()},
                     comentario.get(),
                     periodo[2],
                     var_aprobar.get(),
@@ -867,6 +925,39 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     {i: DT_entries[i].get() for i in DT_entries},   # Obtiene los valores de DT por cada día
                     descanso,Nomina
                 )
+            # Otros campos (Comentario, Aprobar, Añadir)
+            df=tk.IntVar(value=0) 
+            todos.update({empleado_id :{
+            'dias': {dia: var for dia, var in dias_seleccionados.items()},
+            'comentario': entry_comentario.get(),
+            'aprobar': var_aprobar.get(),
+            'entries_HE': {i: entries_HE[i].get() for i in entries_HE},
+            'entries_DT': {i: entries_DT[i].get() for i in entries_DT},
+            'entries_TE': {i: entries_TE[i].get() for i in entries_TE},
+            'descanso': descanso,
+            'df':df,
+            'nomina': Nomina}
+            })
+            
+    # Función para añadir todos los empleados
+    def añadir_todos():
+        for emp_id in todos:
+            agregar_dato(
+                todos[emp_id]['dias'],
+                todos[emp_id]['comentario'],
+                periodo[2],
+                todos[emp_id]['aprobar'],
+                emp_id,
+                todos[emp_id]['entries_HE'],
+                todos[emp_id]['df'].get(),
+                todos[emp_id]['entries_DT'],
+                todos[emp_id]['entries_TE'],
+                todos[emp_id]['descanso'],
+                todos[emp_id]['nomina']
+
+            )
+    btn_añadir_todos = tk.Button(frame_scrollable, text="Añadir para todos",command=añadir_todos)
+    btn_añadir_todos.grid(row=index+1, column=0, columnspan=10)  # Ajusta la posición según sea necesario
          
 # Actualizar el canvas con el tamaño correcto
     frame_scrollable.update_idletasks()
