@@ -15,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from openpyxl.utils import get_column_letter
 from reportlab.lib.units import mm
 import socket
+multireg=False
 fechas_seleccionadas = {}
 fechas=[]
 departamentos=[]
@@ -54,6 +55,10 @@ KEY_ENCRYPT_DECRYPT = "r3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4rr3c6r
 mac = get_mac()
 user=''
 f=3
+def callback():
+    global buttonClicked
+    buttonClicked = not buttonClicked 
+buttonClicked  = False # Bfore first click
 def sortdias(dias):
     a={}
     for i,dia in enumerate(dias):
@@ -530,7 +535,8 @@ def abrir_ventana_principal(username, tipo_opcion):
     ventana_empleados.mainloop()
 # Función para agregar datos a la base de datos
 def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso,nomina):
-    if nomina==2:
+    global buttonClicked
+    if nomina=="2":
         for i, ((dia,index), var) in enumerate(dias.items()):
             almacenar_fecha(i, var, dia, nomina)  # Guarda las fechas seleccionadas
     else:
@@ -547,13 +553,12 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         for dia_festivo in dias_festivos:
             if date.today() == dia_festivo:
                 DF = "1"
-                break  # Salimos del bucle si encontramos un día festivo
-        print(DF)
+                break  
         if resultado[0] == 0:
             # Si no existe, insertar un nuevo registro
             print("INSERT")
             print(HE)
-            if nomina==2:
+            if nomina=="2":
                 for i, ((dia,index), var) in enumerate(dias.items()):
                     if dia in str(descanso) and var.get():
                         DT[i]="1"
@@ -600,12 +605,17 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )
                     )
             conexion.commit()
-            messagebox.showinfo("Éxito", "Datos añadidos correctamente.")
+            print(aprovacion)
+            if multireg==True and buttonClicked==True:
+                messagebox.showinfo("Éxito", "Multiples Datos añadidos correctamente.")
+                buttonClicked=False
+            elif buttonClicked==False:
+                messagebox.showinfo("Éxito", "Datos añadidos correctamente.")
         else:
             # Si ya existe, realizar un update
             print("UPDATE")
             print(HE)
-            if nomina==2:
+            if nomina=="2":
                 for i, ((dia,index), var) in enumerate(dias.items()):
                     if dia in str(descanso) and var.get():
                         DT[i]="1"
@@ -652,19 +662,24 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )
                     )
             conexion.commit()
-            messagebox.showinfo("Éxito", "Datos actualizados correctamente.")
-
+            print(multireg,buttonClicked)
+            print(aprovacion)
+            if multireg==True and buttonClicked==True:
+                messagebox.showinfo("Éxito", "Multiples Datos añadidos correctamente.")
+                buttonClicked=False
+            elif buttonClicked==False:
+                messagebox.showinfo("Éxito", "Datos actualizados correctamente.")
         conexion.close()
 
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo añadir o actualizar el dato: {e}")
-def checar_aprovacion(codigoEmpleado):
+def checar_aprovacion(codigoEmpleado,periodo):
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
 
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT aprovacion FROM datos WHERE codigoEmpleado = ?",codigoEmpleado)
+        cursor.execute("SELECT Aprobacion FROM Datos1 WHERE Codigo_Empleado = ? And Periodo= ?",codigoEmpleado,periodo)
         resultado = cursor.fetchone()
         if "0" in str(resultado) or resultado == None:
             return False
@@ -681,7 +696,8 @@ def check_dias(dia,codigoempleado,periodo):
         #print(codigoempleado)
         #print(dia)
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia[0],periodo)
+        print(dia)
+        cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia,periodo)
         resultado = cursor.fetchone()
         if resultado == None:
             conexion.close()
@@ -714,6 +730,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
     entries_HE = {}  # Diccionario para almacenar los widgets Entry de HE
     entries_DT = {}  # Diccionario para almacenar los widgets Entry de DT
     entries_TE = {}  # Diccionario para almacenar los widgets Entry de TE
+    varaprob = {}
     # Encabezados fijos y desplazables
     headers_fijos = ['ID', 'Nombre', 'Proyecto']
     headers_scrollables = ['Días de la Semana', 'Comentario', 'Aprobar', 'Acción']
@@ -815,7 +832,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                 dias_seleccionados = sortdias(diasq)
                 
                 for i, (dia, var) in enumerate(dias_seleccionados.items()):
-                    a = tk.IntVar(value=check_dias(dia, empleado_id,periodo[2]))
+                    a = tk.IntVar(value=check_dias(dia[0], empleado_id,periodo[2]))
                     dias_seleccionados[dia] = a
             frames = []
 
@@ -840,7 +857,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             if len(dias_seleccionados.items())>7:
                 entry_comentario = tk.Entry(frame_scrollable)
                 entry_comentario.grid(row=index, column=len(dias_seleccionados.items()))
-                if checar_aprovacion(empleado_id):
+                if checar_aprovacion(empleado_id,periodo[2]):
                         var_aprobar = tk.IntVar(value=1)
                 else:
                         var_aprobar = tk.IntVar()
@@ -849,7 +866,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     #print(empleado_id)
                     checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
                     checkbox_aprobar.grid(row=index, column=len(dias_seleccionados.items())+1)
-
+                    varaprob[empleado_id]=var_aprobar
                     # Botón "Añadir"
                     button_add = tk.Button(frame_scrollable, text="Añadir")
                     button_add.grid(row=index, column=len(dias_seleccionados.items())+2)
@@ -884,7 +901,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             else:
                 entry_comentario = tk.Entry(frame_scrollable)
                 entry_comentario.grid(row=index, column=7)
-                if checar_aprovacion(empleado_id):
+                if checar_aprovacion(empleado_id,periodo[2]):
                         var_aprobar = tk.IntVar(value=1)
                 else:
                         var_aprobar = tk.IntVar()
@@ -892,7 +909,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                     # Checkbox "Aprobar"
                     checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
                     checkbox_aprobar.grid(row=index, column=8)
-
+                    varaprob[empleado_id]=var_aprobar
                     # Botón "Añadir"
                     button_add = tk.Button(frame_scrollable, text="Añadir")
                     button_add.grid(row=index, column=9)
@@ -930,7 +947,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             todos.update({empleado_id :{
             'dias': {dia: var for dia, var in dias_seleccionados.items()},
             'comentario': entry_comentario.get(),
-            'aprobar': var_aprobar.get(),
+            'aprobar': var_aprobar,
             'entries_HE': {i: entries_HE[i].get() for i in entries_HE},
             'entries_DT': {i: entries_DT[i].get() for i in entries_DT},
             'entries_TE': {i: entries_TE[i].get() for i in entries_TE},
@@ -941,12 +958,17 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             
     # Función para añadir todos los empleados
     def añadir_todos():
-        for emp_id in todos:
+        global multireg
+        multireg=False
+        for i,emp_id in enumerate(todos):
+            if i==len(todos)-1:
+                print("last insert")
+                multireg=True
             agregar_dato(
                 todos[emp_id]['dias'],
                 todos[emp_id]['comentario'],
                 periodo[2],
-                todos[emp_id]['aprobar'],
+                todos[emp_id]['aprobar'].get(),
                 emp_id,
                 todos[emp_id]['entries_HE'],
                 todos[emp_id]['df'].get(),
@@ -956,7 +978,7 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                 todos[emp_id]['nomina']
 
             )
-    btn_añadir_todos = tk.Button(frame_scrollable, text="Añadir para todos",command=añadir_todos)
+    btn_añadir_todos = tk.Button(frame_scrollable, text="Añadir para todos",command=lambda:[callback(),añadir_todos()])
     btn_añadir_todos.grid(row=index+1, column=0, columnspan=10)  # Ajusta la posición según sea necesario
          
 # Actualizar el canvas con el tamaño correcto
