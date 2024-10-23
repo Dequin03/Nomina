@@ -15,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from openpyxl.utils import get_column_letter
 from reportlab.lib.units import mm
 import socket
+host=socket.gethostname()
 multireg=False
 fechas_seleccionadas = {}
 fechas=[]
@@ -90,7 +91,7 @@ def encrypt(plain_text):
 def conectar_bd_usuarios():
     conexion = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=DESKTOP-BRTB1M8\SQLEXPRESS;'
+        f'SERVER={host}\SQLEXPRESS;'
         'DATABASE=JumapamSistemas;'  # Base de datos de usuarios
         'Trusted_Connection=yes;'
     )
@@ -99,7 +100,7 @@ def conectar_bd_usuarios():
 def conectar_bd_periodos():
     conexion = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=DESKTOP-BRTB1M8\SQLEXPRESS;'
+        f'SERVER={host}\SQLEXPRESS;'
         'DATABASE=BdTrabajadTemporal;'  # Base de datos de usuarios
         'Trusted_Connection=yes;'
     )
@@ -108,7 +109,7 @@ def conectar_bd_periodos():
 def conectar_bd_Jumapam():
     conexion = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=DESKTOP-BRTB1M8\SQLEXPRESS;'
+        f'SERVER={host}\SQLEXPRESS;'
         'DATABASE=Jumapam;' 
         'Trusted_Connection=yes;'
     )
@@ -118,7 +119,7 @@ def conectar_bd_Jumapam():
 def conectar_bd_datos():
     conexion = pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=DESKTOP-BRTB1M8\SQLEXPRESS;'
+        f'SERVER={host}\SQLEXPRESS;'
         'DATABASE=datos;'  # Base de datos donde se guardan los datos
         'Trusted_Connection=yes;'
     )
@@ -152,16 +153,13 @@ def almacenar_fecha(dia_semana, var_checkbox, dia_texto, nomina):
         fecha = hoy - timedelta(days=hoy.weekday()) + timedelta(days=dia_semana+0)
     # Formatear la fecha como DD/MM/AAAA
     fecha_formateada = fecha.strftime('%d/%m/%Y')
-    #print(var_checkbox.get())
     if var_checkbox.get()==1:
         # Si el checkbox está marcado, agregamos la fecha
         fechas_seleccionadas[dia_texto,dia_semana] = fecha_formateada
-        #print(f"Fecha seleccionada: {fecha_formateada}")
     else:
         # Si se desmarca, quitamos la fecha de la lista
         if (dia_texto,dia_semana) in fechas_seleccionadas:
             del fechas_seleccionadas[dia_texto,dia_semana]
-            #print(f"Fecha deseleccionada: {fecha_formateada}")
 def excel():
     hoy = datetime.now()
     fechas = []
@@ -383,21 +381,17 @@ def verificar_acceso(username, password):
         version = '1.0'
         id_sistema = 12
         host_name = 'DESKTOP'
-
         cursor.execute("{CALL spAccesoSistemas (?, ?, ?, ?, ?, ?, ?)}", 
                    usuario, password, mac, ip, version, id_sistema, host_name)
         # Obtener los resultados
         rows = cursor.fetchmany()
         conexion.commit()
-    
-        for row in rows:
-            print(row)
         if "Acceso Correcto|" in str(rows[0]):
             return True
         return False
 
     except Exception as e:
-        print("Error al ejecutar el procedimiento almacenado:", e)
+        messagebox.showerror("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
     # Cerrar la conexión
     if conexion:
         conexion.close()
@@ -405,8 +399,6 @@ def verificar_acceso(username, password):
 def iniciar_sesion():
     username = entry_username.get()
     password = encrypt(entry_password.get())
-    #print(f"Usuario ingresado: {username}")
-    #print(f"Contraseña ingresada: {password}")
     if verificar_acceso(username, password):
         messagebox.showinfo("Éxito", "Acceso concedido. Usuario y contraseña correctos.")
         root.destroy()  # Cierra la ventana de login
@@ -422,7 +414,6 @@ def obtener_empleados(depar,tipo):
     conexion, cursor = conectar_bd_periodos()
     cursor.execute("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=?",depar,tipoc)
     empleados = cursor.fetchall()
-    print(empleados)
     conexion.close()
     return empleados
 def obtener_periodo(x):
@@ -431,7 +422,6 @@ def obtener_periodo(x):
         conexion, cursor = conectar_bd_periodos()
         cursor.execute("SELECT CLAVE_PERIODO, CLAVE_TIPO_NOMINA, DESCRIPCION FROM PERIODO WHERE CLAVE_TIPO_NOMINA=1 AND ? BETWEEN FECHA_I AND FECHA_F",str(hoy))
         periodo = cursor.fetchall()
-        print(periodo)
         conexion.close()
         return periodo
     else:
@@ -451,10 +441,8 @@ def obtener_departamentos():
 def verificar_Permisos(usuario):
     try:
         conexion, cursor = conectar_bd_usuarios()
-        #print(usuario)
         cursor.execute("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO = ?",usuario)
         id=cursor.fetchall()
-        #print(id)
         conexion.close()
         conexion, cursor = conectar_bd_usuarios()
         cursor.execute("{CALL spAccesoSistemasPermisos (?)}",id[0])
@@ -464,13 +452,12 @@ def verificar_Permisos(usuario):
         for row in rows:
             i=i+1
             if i>12:
-                #print(row[11])
                 if row[11]:
                     return True
         return False
 
     except Exception as e:
-        print("Error al ejecutar el procedimiento almacenado:", e)
+        messagebox.showerror("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
     # Cerrar la conexión
     if conexion:
         conexion.close()
@@ -556,8 +543,6 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                 break  
         if resultado[0] == 0:
             # Si no existe, insertar un nuevo registro
-            print("INSERT")
-            print(HE)
             if nomina=="2":
                 for i, ((dia,index), var) in enumerate(dias.items()):
                     if dia in str(descanso) and var.get():
@@ -605,7 +590,6 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )
                     )
             conexion.commit()
-            print(aprovacion)
             if multireg==True and buttonClicked==True:
                 messagebox.showinfo("Éxito", "Multiples Datos añadidos correctamente.")
                 buttonClicked=False
@@ -613,8 +597,6 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                 messagebox.showinfo("Éxito", "Datos añadidos correctamente.")
         else:
             # Si ya existe, realizar un update
-            print("UPDATE")
-            print(HE)
             if nomina=="2":
                 for i, ((dia,index), var) in enumerate(dias.items()):
                     if dia in str(descanso) and var.get():
@@ -662,8 +644,6 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )
                     )
             conexion.commit()
-            print(multireg,buttonClicked)
-            print(aprovacion)
             if multireg==True and buttonClicked==True:
                 messagebox.showinfo("Éxito", "Multiples Datos añadidos correctamente.")
                 buttonClicked=False
@@ -683,8 +663,6 @@ def checar_aprovacion(codigoEmpleado,periodo):
         resultado = cursor.fetchone()
         if "0" in str(resultado) or resultado == None:
             return False
-        else:
-            print(codigoEmpleado)
         conexion.close()    
         return True
     except Exception as e:
@@ -693,10 +671,7 @@ def check_dias(dia,codigoempleado,periodo):
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
-        #print(codigoempleado)
-        #print(dia)
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        print(dia)
         cursor.execute("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",codigoempleado,dia,periodo)
         resultado = cursor.fetchone()
         if resultado == None:
@@ -707,7 +682,6 @@ def check_dias(dia,codigoempleado,periodo):
         elif "/" not in str(resultado):
             conexion.close()
             return 0
-        #print(resultado)
         conexion.close()    
         return 1
     except Exception as e:
@@ -863,7 +837,6 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                         var_aprobar = tk.IntVar()
                 if fv:
                     # Checkbox "Aprobar"
-                    #print(empleado_id)
                     checkbox_aprobar = tk.Checkbutton(frame_scrollable, text="Aprobar", variable=var_aprobar)
                     checkbox_aprobar.grid(row=index, column=len(dias_seleccionados.items())+1)
                     varaprob[empleado_id]=var_aprobar
@@ -953,7 +926,8 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
             'entries_TE': {i: entries_TE[i].get() for i in entries_TE},
             'descanso': descanso,
             'df':df,
-            'nomina': Nomina}
+            'nomina': Nomina,
+            'boton':button_add}
             })
             
     # Función para añadir todos los empleados
@@ -962,7 +936,6 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
         multireg=False
         for i,emp_id in enumerate(todos):
             if i==len(todos)-1:
-                print("last insert")
                 multireg=True
             agregar_dato(
                 todos[emp_id]['dias'],
@@ -976,7 +949,6 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
                 todos[emp_id]['entries_TE'],
                 todos[emp_id]['descanso'],
                 todos[emp_id]['nomina']
-
             )
     btn_añadir_todos = tk.Button(frame_scrollable, text="Añadir para todos",command=lambda:[callback(),añadir_todos()])
     btn_añadir_todos.grid(row=index+1, column=0, columnspan=10)  # Ajusta la posición según sea necesario
