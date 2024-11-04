@@ -2,7 +2,6 @@
 import pyodbc
 import tkinter as tk
 from tkinter import messagebox, ttk  # Agregar ttk para el combobox
-from tkinter import messagebox
 from uuid import getnode as get_mac
 import base64
 from datetime import datetime, timedelta,date
@@ -15,6 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from openpyxl.utils import get_column_letter
 from reportlab.lib.units import mm
 import socket
+varss=[]
 host=socket.gethostname()
 multireg=False
 fechas_seleccionadas = {}
@@ -408,6 +408,14 @@ def obtener_departamentos(user):
         departamentos.append(str(i[0]))
     conexion.close()
     return departamentos
+def obtener_ALL_departamentos():
+    conexion, cursor = conectar_bd_periodos()
+    cursor.execute("SELECT CLAVE_DEPARTAMENTO FROM DEPARTAM")
+    depars=[]
+    for i in cursor:
+        depars.append(str(i[0]))
+    conexion.close()
+    return depars
 # Función para crear la interfaz y mostrar los empleados con checkboxes y comentario
 def verificar_Permisos(usuario):
     try:
@@ -431,6 +439,56 @@ def verificar_Permisos(usuario):
     # Cerrar la conexión
     if conexion:
         conexion.close()
+def GET_USER():
+    try:
+        conexion, cursor = conectar_bd_usuarios()
+        cursor.execute("SELECT ID_USUARIO FROM HIS_SISTEMAS_PERMISOS WHERE ID_SISTEMA = 12")
+        id=cursor.fetchall()
+        iD=[]
+        for ids in id:
+            print(ids)
+            iD.append(str(ids[0]))
+        conexion.close()
+        return iD
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
+    # Cerrar la conexión
+    if conexion:
+        conexion.close()
+def UPDATE_USER(id,clave):
+    try:
+        conexion, cursor = conectar_bd_usuarios()
+        for clavedep in clave:
+            print(clavedep)
+            cursor.execute("SELECT ID_USuARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",id,clavedep)
+            if cursor.fetchone() is None:
+                cursor.execute("INSERT INTO HIS_SISTEMAS_DEPUSER VALUES(?,?)",id,clavedep)
+                cursor.commit()
+            else:
+                print(cursor.fetchone())
+        cursor.close()
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
+    # Cerrar la conexión
+    if conexion:
+        conexion.close()
+def checkdep(id, clave,vars):
+    try:
+        conexion, cursor = conectar_bd_usuarios()
+        for i,(clavedep,var) in enumerate(clave):
+            cursor.execute("SELECT ID_USuARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",id,clavedep)
+            if cursor.fetchone() is None:
+                print("BYE")
+                vars[i]=tk.IntVar(value=0)
+            else:
+                print("HI")
+                vars[i]=tk.IntVar(value=1)
+        cursor.close()
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al ejecutar: {e}")
+    # Cerrar la conexión
+    if conexion:
+        conexion.close()
 def abrir_ventana_principal(username, tipo_opcion):
     departamentos = obtener_departamentos(username)
     print(departamentos)
@@ -443,6 +501,9 @@ def abrir_ventana_principal(username, tipo_opcion):
     # Botón de cerrar sesión
     button_logout = tk.Button(ventana_empleados, text="Cerrar sesión", command=lambda: cerrar_sesion(ventana_empleados))
     button_logout.grid(row=2, column=4, sticky="w")
+    # Botón de agregar
+    button_user = tk.Button(ventana_empleados, text="Agregar Usuario", command=lambda: Agregar_usuario(ventana_empleados))
+    button_user.grid(row=2, column=5, sticky="w")
     # Combobox para seleccionar "Confianza" o "Sindicato"
     label_opcion = tk.Label(ventana_empleados, text="Selecciona la opción:")
     label_opcion.grid(row=2, column=0, padx=5, pady=10, sticky="w")
@@ -892,7 +953,133 @@ def actualizar_contenido(ventana, frame_dinamico, empleados, tipo_opcion, fv, de
 def cerrar_sesion(ventana_principal):
     ventana_principal.destroy()  # Cierra la ventana principal
     mostrar_login()  # Vuelve a mostrar la ventana de inicio de sesión
+def cerrar_sesionf(ventana_principal):
+    ventana_principal.destroy()  # Cierra la ventana principal
+def Agregar_usuario(ventana_principal,):
+    ventana_principal.destroy() 
+    abrir_ventana_usuarios()  # Vuelve a mostrar la ventana de inicio de sesión
 # Función para mostrar la ventana de login nuevamente
+def abrir_ventana_usuarios():
+    depars=[]
+    depars=obtener_ALL_departamentos()
+    # Crear la ventana
+    ventana_empleados = tk.Tk()
+    ventana_empleados.title("Empleados - Registro Usuarios")
+    ventana_empleados.state('zoomed')
+    usuarios=GET_USER()
+    print(usuarios)
+    comboboxuser = ttk.Combobox(ventana_empleados, values=usuarios)
+    comboboxuser.set(usuarios[0])  # Establecer la opción por defecto
+    comboboxuser.pack(pady=5)
+    comboboxuser['state'] = "readonly"
+    # Botón de cerrar sesión
+    button_logout = tk.Button(ventana_empleados, text="Cerrar sesión", command=lambda: cerrar_sesionf(ventana_empleados))
+    button_logout.pack(pady=5)
+    # Crear una etiqueta para los departamentos
+    label_departamentos = tk.Label(ventana_empleados, text="Selecciona los departamentos:")
+    label_departamentos.pack(pady=10)
+
+    # Agregar campo de búsqueda y botón de búsqueda
+    search_frame = tk.Frame(ventana_empleados)
+    search_frame.pack(pady=5)
+    search_entry = tk.Entry(search_frame, width=30)
+    search_entry.pack(side="left", padx=5)
+    
+    # Crear un contenedor con desplazamiento para los checkboxes
+    frame_con_scroll = tk.Frame(ventana_empleados)
+    frame_con_scroll.pack(pady=5, fill='both', expand=True)
+
+    # Crear un Canvas para contener el Frame de departamentos
+    canvas = tk.Canvas(frame_con_scroll)
+    scrollbar = ttk.Scrollbar(frame_con_scroll, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+
+    # Configurar el frame interno en el canvas
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    # Colocar el canvas y el scrollbar
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # Lista para almacenar los estados de las checkboxes
+    checkbox_vars = []
+    checkboxes = []
+    vars=[]
+     # Función que se ejecuta al cambiar el estado de cada checkbox
+    def actualizar_valor(departamento, var):
+        for i, (dep, _) in enumerate(checkbox_vars):
+            if dep == departamento:
+                print(var.get())
+                checkbox_vars[i] = (dep, var)
+                print(checkbox_vars[i])
+                break
+
+    # Crear las checkboxes y vincular la función de actualización
+    def crear():
+        search_text = search_entry.get().lower()
+        for i, (departamento, _) in enumerate(checkbox_vars):
+            if search_text in departamento.lower():
+                checkboxes[i].pack_forget()
+            else:
+                checkboxes[i].pack_forget()
+        checkboxes.clear()
+        checkbox_vars.clear()
+        for i,departamento in enumerate(depars):
+            vars.append(tk.IntVar())
+            checkbox_vars.append((departamento, vars[i]))  # Añadir a la lista
+        checkdep(comboboxuser.get(),checkbox_vars,vars)
+        for i,departamento in enumerate(depars):
+            checkbox = tk.Checkbutton(
+                scrollable_frame, text=departamento, variable=vars[i],
+                command=lambda d=departamento, v=vars[i]: actualizar_valor(d, v)
+            )
+            checkbox.pack(anchor='w')
+            checkboxes.append(checkbox)
+    crear()
+    # Función para buscar y filtrar departamentos
+    def buscar_departamento():
+        search_text = search_entry.get().lower()
+        for i, (departamento, _) in enumerate(checkbox_vars):
+            if search_text in departamento.lower():
+                checkboxes[i].pack(anchor='w')
+            else:
+                checkboxes[i].pack_forget()
+
+    # Botón de búsqueda
+    search_button = tk.Button(search_frame, text="Buscar", command=buscar_departamento)
+    search_button.pack(side="left", padx=5)
+
+    # Función para desplazarse con la rueda del ratón
+    def on_mouse_wheel(event):
+        if event.num == 4:  # Para sistemas que usan Button-4 y Button-5
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            canvas.yview_scroll(1, "units")
+        else:  # Para Windows y otros sistemas con MouseWheel
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    # Vincular la rueda del ratón con el desplazamiento
+    canvas.bind_all("<MouseWheel>", on_mouse_wheel)        # Windows
+    canvas.bind_all("<Button-4>", on_mouse_wheel)          # Otros sistemas
+    canvas.bind_all("<Button-5>", on_mouse_wheel)          # Otros sistemas
+    # Botón para imprimir los departamentos seleccionados
+    def mostrar_seleccion():
+        print([(dep,var.get()) for dep, var in checkbox_vars])
+        seleccionados = [dep for dep, var in checkbox_vars if var.get()]
+        print("Departamentos seleccionados:", seleccionados)
+        UPDATE_USER(comboboxuser.get(),seleccionados)
+    comboboxuser.bind("<<ComboboxSelected>>", lambda event: crear())
+    button_seleccion = tk.Button(ventana_empleados, text="Mostrar Selección", command=mostrar_seleccion)
+    button_seleccion.pack(pady=10)
+    ventana_empleados.grid_rowconfigure(1, weight=1)
+    ventana_empleados.grid_columnconfigure(0, weight=1)
+    ventana_empleados.mainloop()
 def mostrar_login():
     global root, entry_username, entry_password
     root = tk.Tk()
