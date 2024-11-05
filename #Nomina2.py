@@ -7,7 +7,8 @@ import base64
 from datetime import datetime, timedelta,date
 from openpyxl import load_workbook,Workbook
 import pandas as pd
-from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors,pdfencrypt
 from reportlab.lib.pagesizes import letter,landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph,PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
@@ -292,7 +293,7 @@ def excel_to_pdf(excel_file, pdf_file):
         leftMargin=10, 
         rightMargin=10, 
         topMargin=10, 
-        bottomMargin=10
+        bottomMargin=10, encrypt=pdfencrypt.StandardEncryption("pass", canPrint=0,canModify=0,canCopy=0,canAnnotate=0)
     )
     # Estilo para los párrafos (ajuste de texto)
     styles = getSampleStyleSheet()
@@ -338,7 +339,7 @@ def excel_to_pdf(excel_file, pdf_file):
     # Segunda página: combinación de columnas A a D y L en adelante
     elements.append(create_table(df_A_D_L_onward, len(df_A_D_L_onward.columns)))
     # Generar el PDF
-    pdf.build(elements)    
+    pdf.build(elements)
 # Función para verificar si el usuario existe en la tabla de usuarios
 def verificar_acceso(username, password):
     try:
