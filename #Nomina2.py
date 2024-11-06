@@ -189,16 +189,20 @@ def excel():
     sheet.page_setup.orientation = 'landscape'
     sheet.page_setup.printGridlines = True
     workbook.close()
-def verificar_asistencias(codigoEmpleado):
+def verificar_asistencias(codigoEmpleado,periodo):
     try:
         # Conectar a la base de datos
         conexion, cursor = conectar_bd_datos()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        cursor.execute("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=?",codigoEmpleado)
+        cursor.execute("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=? AND Periodo=?",codigoEmpleado,periodo)
         resultado = cursor.fetchall()
         asistencia_modificada = []
         for fila in resultado:
-            dia_asistencia = 1 if fila[1] != "0" else "0"
+            print(fila[1])
+            if fila[1] != "0": 
+                dia_asistencia = 1
+            else:
+                dia_asistencia = 0
             asistencia_modificada.append((fila[0], dia_asistencia, fila[2], fila[3], fila[4]))
         conexion.close()
         return asistencia_modificada if asistencia_modificada else None  # Asegurarse de devolver None si no hay datos
@@ -225,7 +229,7 @@ def excel_add(id,depar,tipo,periodo):
         ape2.append(ap2)
         x+=1
     for i in range(4, x + 4):
-        Dato = verificar_asistencias(i - 3)
+        Dato = verificar_asistencias(i - 3,periodo)
         if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
             sheet["A" + str(i)] = str(Dato[0][0])  # Código de empleado
         sheet["B" + str(i)] = str(nombres[i - 4])  # Nombre completo del empleado
