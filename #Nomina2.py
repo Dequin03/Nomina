@@ -1,5 +1,6 @@
 #Nomina2
 import pyodbc
+import qrcode
 import tkinter as tk
 from tkinter import messagebox, ttk  # Agregar ttk para el combobox
 from uuid import getnode as get_mac
@@ -10,7 +11,7 @@ import pandas as pd
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors,pdfencrypt
 from reportlab.lib.pagesizes import letter,landscape
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph,PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph,PageBreak,Image
 from reportlab.lib.styles import getSampleStyleSheet
 from openpyxl.utils import get_column_letter
 from reportlab.lib.units import mm
@@ -135,6 +136,7 @@ def obtener_quincenas():
         fin = date(year, month, 15)
         for i in range(15):
             a.append((inicio+timedelta(i)).weekday())
+            print(a)
     else:
         # Segunda quincena (del 16 al último día del mes)
         inicio = date(year, month, 16)
@@ -183,6 +185,39 @@ def excel():
     for i in range(7):
         column_letter = get_column_letter(5 + i)  # E es la columna 5
         sheet[f"{column_letter}3"] = fechas[i]
+    # Guardar el archivo de Excel actualizado
+    workbook.save(ruta_excel)
+    # Configuración de la página
+    sheet.page_setup.orientation = 'landscape'
+    sheet.page_setup.printGridlines = True
+    workbook.close()
+    hoy=datetime.now().day
+    hoy2=datetime.now()
+    fechasQ = []
+    dias=obtener_quincenas()
+    print(dias)
+    # Calcular la fecha del día seleccionado
+    for i,fec in enumerate(dias):
+        if day <=15:
+            fecha = hoy2 - timedelta(days=day) + timedelta(days=i+1)
+        elif day>15:
+            fecha=datetime(year,month,16)+timedelta(days=i)
+        # Formatear la fecha como DD/MM/AAAA
+        fecha_formateada = fecha.strftime('%d/%m/%Y')
+        fechasQ.append(fecha_formateada)
+    # Crear un nuevo libro de Excel o cargar uno existente
+    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato - copia.xlsx"
+    # Verificar si el archivo existe y cargarlo, de lo contrario, crear uno nuevo
+    try:
+        workbook = load_workbook(ruta_excel)
+    except FileNotFoundError:
+        workbook = Workbook()
+    # Obtener la hoja de trabajo (el índice empieza en cero, o usa el nombre de la hoja)
+    sheet = workbook.active  # O usa workbook["NombreHoja"] para acceder a una hoja específica
+    # Asignar fechas a las celdas correspondientes
+    for i,fec in enumerate(dias):
+        column_letter = get_column_letter(5 + i)  # E es la columna 5
+        sheet[f"{column_letter}3"] = fechasQ[i]
     # Guardar el archivo de Excel actualizado
     workbook.save(ruta_excel)
     # Configuración de la página
@@ -338,10 +373,12 @@ def excel_to_pdf(excel_file, pdf_file):
     elements = []
     # Primera página: columnas A a K
     elements.append(create_table(df_A_K, 11))  # 11 columnas de A a K
+    elements.append(Image("C:\\Users\\usuario\\Downloads\\Nomina\\output.png"))
     # Saltar a la siguiente página
     elements.append(PageBreak())
     # Segunda página: combinación de columnas A a D y L en adelante
     elements.append(create_table(df_A_D_L_onward, len(df_A_D_L_onward.columns)))
+    elements.append(Image("C:\\Users\\usuario\\Downloads\\Nomina\\output.png"))
     # Generar el PDF
     pdf.build(elements)
 # Función para verificar si el usuario existe en la tabla de usuarios
