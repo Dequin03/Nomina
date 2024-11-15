@@ -4,12 +4,10 @@ class AnimatedApp(ft.UserControl):
     def __init__(self):
         super().__init__()
 
-        # Variables de color de ejemplo; reemplázalas según sea necesario
         self.color_title = ft.colors.BLUE_ACCENT_700
         self.color_container = ft.colors.LIGHT_BLUE_100
-        self.title_color = ft.colors.BLACK  # Color del título
+        self.title_color = ft.colors.BLACK
 
-        # Crear el contenedor de la imagen con un pequeño padding a la izquierda
         self.image = ft.Container(
             content=ft.Image(
                 src="https://jumapam.gob.mx/images/JPG/jumapam.jpg",
@@ -17,38 +15,31 @@ class AnimatedApp(ft.UserControl):
                 height=40,
                 fit=ft.ImageFit.CONTAIN
             ),
-            padding=ft.padding.only(left=10)  # Espacio a la izquierda
+            padding=ft.padding.only(left=10)
         )
 
-        # Configuración del título
         self.title_text = ft.Text("Jumapam", size=30, color=self.title_color, weight=ft.FontWeight.BOLD)
 
-        # Contenedor vacío para crear un espacio adicional
-        self.spacing_container = ft.Container(
-            width=200  # Ancho del espacio a la derecha del título
-        )
+        self.spacing_container = ft.Container(width=200)
 
-        # Contenedor donde va el periodo, con padding a la izquierda
         self.white_container = ft.Container(
-            bgcolor=ft.colors.WHITE,  # Color de fondo blanco
-            width=400,  # Ancho del contenedor
-            height=30,  # Altura del contenedor
-            alignment=ft.alignment.center,  # Alinear contenido al centro
-            content=ft.Text("Periodo", color=ft.colors.BLACK),  # Texto dentro del contenedor
+            bgcolor=ft.colors.WHITE,
+            width=400,
+            height=30,
+            alignment=ft.alignment.center,
+            content=ft.Text("Periodo", color=ft.colors.BLACK),
             border_radius=5,
         )
 
-        # Botón de cerrar sesión
         self.logout_button = ft.ElevatedButton(
             text="Cerrar sesión",
             bgcolor=ft.colors.RED_400,
             color=ft.colors.WHITE,
             width=140,
             height=40,
-            on_click=self.logout  # Función para manejar el evento de clic
+            on_click=self.logout
         )
 
-        # Contenedor con imagen, título y botón en una fila
         self.frame_title = ft.Container(
             expand=False,
             height=60,
@@ -59,116 +50,151 @@ class AnimatedApp(ft.UserControl):
                 controls=[
                     self.image,
                     self.title_text,
-                    self.spacing_container,  # Espacio antes del contenedor blanco
+                    self.spacing_container,
                     self.white_container,
                     ft.Container(
                         content=self.logout_button,
                         alignment=ft.alignment.center_right,
                         expand=True,
-                        padding=ft.padding.only(top=5, right=10)  # Espacio en la parte superior y derecha
+                        padding=ft.padding.only(top=5, right=10)
                     )
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER
             )
         )
 
-        # Contenedor que contiene los Dropdowns, la tabla y el nuevo botón
         self.remaining_container = ft.Container(
             expand=True,
             content=ft.Column(
                 controls=[
                     ft.Container(
-                        height=560,  # Mantiene el tamaño del contenedor adicional
+                        height=560,
                         bgcolor=self.color_container,
                         border_radius=10,
                         alignment=ft.alignment.center_left,
                         content=ft.Column(
                             controls=[
-                                ft.Container(  # Contenedor para los Dropdowns
-                                    padding=ft.padding.only(top=20),  # Espacio superior para los Dropdowns
-                                    content=ft.Row(  # Usar Row para alinear horizontalmente
+                                ft.Container(
+                                    padding=ft.padding.only(top=20),
+                                    content=ft.Row(
                                         controls=[
                                             ft.Dropdown(
-                                                width=150,  # Ancho interno del Dropdown
+                                                width=150,
                                                 height=40,
-                                                bgcolor=ft.colors.GREY_300,  # Fondo del Dropdown
-                                                color=ft.colors.BLACK,  # Color del texto del Dropdown
-                                                hint_text="Seleccione...",  # Texto dentro del Dropdown cuando no hay opción seleccionada
+                                                bgcolor=ft.colors.GREY_300,
+                                                color=ft.colors.BLACK,
+                                                hint_text="Seleccione...",
                                                 options=[
                                                     ft.dropdown.Option("Sindicato"),
                                                     ft.dropdown.Option("Confianza")
                                                 ],
-                                                padding=ft.padding.only(left=10, right=10)  # Padding horizontal para separar del borde
+                                                padding=ft.padding.only(left=10, right=10)
                                             ),
-                                            ft.Container(
-                                                width=20  # Espacio entre los Dropdowns
-                                            ),
-                                            ft.Text("Seleccione un Departamento:", size=20, color="BLACK"),  # Texto descriptivo
+                                            ft.Container(width=20),
+                                            ft.Text("Seleccione un Departamento:", size=20, color="BLACK"),
                                             ft.Dropdown(
-                                                width=150,  # Ancho interno del Dropdown
+                                                width=150,
                                                 height=40,
-                                                bgcolor=ft.colors.GREY_300,  # Fondo del Dropdown
-                                                color=ft.colors.BLACK,  # Color del texto del Dropdown
-                                                hint_text="Seleccione...",  # Texto dentro del Dropdown cuando no hay opción seleccionada
+                                                bgcolor=ft.colors.GREY_300,
+                                                color=ft.colors.BLACK,
+                                                hint_text="Seleccione...",
                                                 options=[
                                                     ft.dropdown.Option("1111"),
                                                     ft.dropdown.Option("2222")
                                                 ],
-                                                padding=ft.padding.only(left=10, right=10)  # Padding horizontal para separar del borde
+                                                padding=ft.padding.only(left=10, right=10)
                                             )
                                         ]
                                     )
                                 ),
-                                # Tabla de ID, nombre, número y días
                                 ft.Container(
                                     padding=ft.padding.only(top=20),
                                     content=ft.Column(
                                         controls=[
                                             ft.Row(
                                                 controls=[
-                                                    ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Número", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Lunes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Martes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Miércoles", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Jueves", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Viernes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Sábado", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                    ft.Text("Domingo", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+                                                    ft.Container(content=ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  padding=ft.padding.only(left=20,right=90, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Proyecto", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), alignment=ft.alignment.center_left),
+                                                    ft.Container(content=ft.Text("Lunes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=4,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Martes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Miércoles", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Jueves", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Viernes", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Sábado", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Domingo", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Comentarios", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=0,right=25, top=0, bottom=0)),
+                                                    ft.Container(content=ft.Text("Añadir", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=50,right=25, top=0, bottom=0)),
                                                 ],
-                                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                                               # alignment=ft.MainAxisAlignment.SPACE_EVENLY
                                             ),
                                             ft.Container(
-                                                bgcolor=ft.colors.BLUE_600,  # Fondo azul claro para la fila
-                                                padding=ft.padding.all(2),  # Espaciado dentro de la fila
+                                                bgcolor=ft.colors.BLUE_500,
+                                                padding=ft.padding.all(2),
                                                 content=ft.Row(
                                                     controls=[
-                                                        ft.Text("1", color=ft.colors.BLACK),
-                                                        ft.Text("Ejemplo 1", color=ft.colors.BLACK),
-                                                        ft.Text("001", color=ft.colors.BLACK),
-                                                        *[ft.Checkbox(value=False) for _ in range(7)]  # Checkbox para cada día
+                                                         ft.TextField(value="1111",height=60, width=70, color="black", bgcolor=ft.colors.BLUE_500, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none", text_align="center"),
+                                                        ft.TextField(value="Kevin Alan Quintero Barragan jjjjjjjjjjj",height=60, width=200, bgcolor=ft.colors.BLUE_500, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none",color="black", text_align="center"),
+                                                        ft.TextField(value="0002",height=60, width=70, color="black",  bgcolor=ft.colors.BLUE_500, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none", text_align="center"),
+                                                        *[ft.Column(
+                                                            controls=[
+                                                                ft.Row(
+                                                                    controls=[
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10),
+                                                                        ft.Checkbox(value=True, check_color="black", fill_color="white"),
+                                                                    ],
+                                                                    spacing=4
+                                                                ),
+                                                                ft.Row(
+                                                                    controls=[
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10),
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10),
+                                                                    ],
+                                                                    spacing=4
+                                                                ),
+                                                            ]
+                                                        ) for _ in range(7)],
+                                                        ft.TextField(height=50, width=150, color="black", hint_text="Comentarios", bgcolor="white", multiline=True,min_lines=1, max_lines=2,text_size=13),
+                                                        ft.ElevatedButton(text="Añadir",icon=ft.icons.ADD,width=60 ,height=50,bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE, on_click=self.send_data),
                                                     ],
-                                                    alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                                                  #  alignment=ft.MainAxisAlignment.SPACE_EVENLY
                                                 )
                                             ),
                                             ft.Container(
-                                                bgcolor=ft.colors.BLUE_300,  # Fondo azul claro para la fila
-                                                padding=ft.padding.all(5),  # Espaciado dentro de la fila
+                                                bgcolor=ft.colors.BLUE_300,
+                                                padding=ft.padding.all(2),
                                                 content=ft.Row(
                                                     controls=[
-                                                        ft.Text("2", color=ft.colors.BLACK),
-                                                        ft.Text("Ejemplo 2", color=ft.colors.BLACK),
-                                                        ft.Text("002", color=ft.colors.BLACK),
-                                                        *[ft.Checkbox(value=False) for _ in range(7)]  # Checkbox para cada día
+                                                        ft.TextField(value="1631",height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none", text_align="center"),
+                                                        ft.TextField(value="Kevin Alan Quintero ",height=60, width=200, bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none",color="black", text_align="center"),
+                                                        ft.TextField(value="00",height=60, width=70, color="black",  bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True,min_lines=1, max_lines=2,text_size=13, border="none", text_align="center"),
+                                                        *[ft.Column(
+                                                            controls=[
+                                                                ft.Row(
+                                                                    controls=[
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10),
+                                                                        ft.Checkbox(value=True, check_color="black", fill_color="white"),
+                                                                    ],
+                                                                    spacing=4
+                                                                ),
+                                                                ft.Row(
+                                                                    controls=[
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10),
+                                                                        ft.TextField(height=35, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10),
+                                                                    ],
+                                                                    spacing=4
+                                                                ),
+                                                            ]
+                                                        ) for _ in range(7)],
+                                                        ft.TextField(height=50, width=150, color="black", hint_text="Comentarios", bgcolor="white", multiline=True,min_lines=1, max_lines=2,text_size=13),
+                                                        ft.ElevatedButton(text="Añadir",icon=ft.icons.ADD,width=60 ,height=50,bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE, on_click=self.send_data),
                                                     ],
-                                                    alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                                                   # alignment=ft.MainAxisAlignment.SPACE_EVENLY
                                                 )
                                             ),
                                         ]
                                     )
                                 ),
-                                # Botón adicional debajo de la tabla
                                 ft.Container(
                                     alignment=ft.alignment.top_left,
                                     padding=ft.padding.only(top=20, left=10),
@@ -176,10 +202,12 @@ class AnimatedApp(ft.UserControl):
                                         text="Generar Reporte",
                                         bgcolor=ft.colors.BLUE_800,
                                         color=ft.colors.WHITE,
-                                        on_click=self.send_data  # Función que manejará el evento del botón
-                                    )
-                                )
-
+                                        on_click=self.send_data
+                                    ),
+                                    
+                                    
+                                ),
+                               
                             ],
                             spacing=10
                         )
@@ -188,7 +216,6 @@ class AnimatedApp(ft.UserControl):
             )
         )
 
-        # Agregar los contenedores a la página
         self.controls = [
             ft.Column(
                 expand=True,
@@ -200,22 +227,14 @@ class AnimatedApp(ft.UserControl):
         ]
 
     def logout(self, e):
-        # Acción a realizar al hacer clic en "Cerrar sesión"
-        print("Cierre de sesión realizado.")  # Puedes cambiar esta línea por la lógica de cierre de sesión que desees.
+        print("Cierre de sesión realizado.")
 
     def send_data(self, e):
-        # Acción a realizar al hacer clic en "Enviar"
-        print("Datos enviados.")  # Puedes reemplazar esto con la lógica que necesites para enviar los datos
+        print("Datos enviados.")
 
-    def bar_icons(self, e):
-        # Acción para el icono del botón de inicio (sin uso en este caso)
-        pass
-
-# Función para inicializar la aplicación
 def main(page: ft.Page):
     page.bgcolor = ft.colors.BLACK
     app = AnimatedApp()
     page.add(app)
 
-# Ejecutar la aplicación
 ft.app(target=main)
