@@ -50,8 +50,8 @@ class Variables:
         self.todos={}
         self.dias_festivos=[date(self.year,1,1),date(self.year,5,1),date(self.year,9,16),date(self.year,12,25)]
         self.dias_semana={0:"LUNES",1:"MARTES",2:"MIERCOLES",3:"JUEVES",4:"VIERNES",5:"SABADO",6:"DOMINGO",}
-        self.excel_file = os.path.abspath("C:\\Users\\usuario\\Downloads\\Nomina\\Formatollenado.xlsx")
-        self.pdf_file = os.path.abspath("C:\\Users\\usuario\\Downloads\\Nomina\\output\\output.pdf")
+        self.excel_file =  os.path.dirname(__file__)+"\\Formatollenado.xlsx"
+        self.pdf_file =  os.path.dirname(__file__)+"\\output.pdf"
         self.HE_entries={}
         self.DT_entries={}
         self.TE_entries={}
@@ -236,7 +236,7 @@ def excel():
         fecha_formateada = fecha.strftime('%d/%m/%Y')
         fechas.append(fecha_formateada)
     # Crear un nuevo libro de Excel o cargar uno existente
-    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato.xlsx"
+    ruta_excel = os.path.dirname(__file__)+"\\Formato.xlsx"
     # Verificar si el archivo existe y cargarlo, de lo contrario, crear uno nuevo
     try:
         workbook = load_workbook(ruta_excel)
@@ -269,7 +269,7 @@ def excel():
         fecha_formateada = fecha.strftime('%d/%m/%Y')
         fechasQ.append(fecha_formateada)
     # Crear un nuevo libro de Excel o cargar uno existente
-    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato - copia.xlsx"
+    ruta_excel =os.path.dirname(__file__)+"\\Formato - copia.xlsx"
     # Verificar si el archivo existe y cargarlo, de lo contrario, crear uno nuevo
     try:
         workbook = load_workbook(ruta_excel)
@@ -293,7 +293,7 @@ def verificar_asistencias(codigoEmpleado,periodo):
         db = ConexionBD(host, database="datos")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        resultado = db.ejecutar_consulta("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=? AND Periodo=?",codigoEmpleado,periodo)
+        resultado = db.ejecutar_consulta("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=? AND Periodo=?",(codigoEmpleado,periodo))
         asistencia_modificada = []
         for fila in resultado:
             print(fila[1])
@@ -305,10 +305,15 @@ def verificar_asistencias(codigoEmpleado,periodo):
         db.cerrar()
         return asistencia_modificada if asistencia_modificada else None  # Asegurarse de devolver None si no hay datos
     except Exception as e:
-        print("Error", f"No se pudo añadir o actualizar el dato: {e}")
+        print("Error", f"Verificando: {e}")
 def excel_add(id,depar,tipo,periodo):
     # Cargar el archivo de Excel
-    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formato.xlsx"
+    ruta= os.path.dirname(__file__)
+    print("Tipo:",tipo,periodo)
+    if tipo=="Sindicato":
+        ruta_excel =  os.path.dirname(__file__)+"\\Formato.xlsx"
+    else:
+        ruta_excel =  os.path.dirname(__file__)+"\\Formato - copia.xlsx"
     workbook = load_workbook(ruta_excel)
     # Obtener la hoja de trabajo
     sheet = workbook.active 
@@ -317,8 +322,10 @@ def excel_add(id,depar,tipo,periodo):
     nombres = []
     ape=[]
     ape2=[]
+    code=[]
     # Extraer el nombre completo del empleado
     for empleado in empleados:
+        code.append(empleado[0])
         nombre_completo = f"{empleado[2]}"
         nombres.append(nombre_completo)
         ap=f"{empleado[3]}"
@@ -326,47 +333,128 @@ def excel_add(id,depar,tipo,periodo):
         ap2=f"{empleado[4]}"
         ape2.append(ap2)
         x+=1
-    for i in range(4, x + 4):
-        Dato = verificar_asistencias(i - 3,periodo)
-        if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
-            sheet["A" + str(i)] = str(Dato[0][0])  # Código de empleado
-        sheet["B" + str(i)] = str(nombres[i - 4])  # Nombre completo del empleado
-        sheet["C" + str(i)] = str(ape[i - 4])  # Nombre completo del empleado
-        sheet["D" + str(i)] = str(ape2[i - 4])  # Nombre completo del empleado
-        # Solo asignar si hay datos en Dato[0] y Dato[0][1]
-        sheet["E" + str(i)] = 1 if Dato[0][1] > 0 else 0  # Dias_Asistencia (0 o 1)
-        sheet["L" + str(i)] = str(Dato[0][2])  # Horas_Extra
-        sheet["M" + str(i)] = str(Dato[0][3])  # Turnos_Extras
-        sheet["N" + str(i)] = str(Dato[0][4])  # Descansos_Trabajados
-        # Asegúrate de verificar la longitud de Dato[1] y demás
-        sheet["F" + str(i)] = str(Dato[1][1])  # Datos de asistencia
-        sheet["O" + str(i)] = str(Dato[1][2])  # Más datos
-        sheet["P" + str(i)] = str(Dato[1][3])  # Más datos
-        sheet["Q" + str(i)] = str(Dato[1][4])  # Más datos
-        sheet["G" + str(i)] = str(Dato[2][1])  # Datos adicionales
-        sheet["R" + str(i)] = str(Dato[2][2])  # Más datos
-        sheet["S" + str(i)] = str(Dato[2][3])  # Más datos
-        sheet["T" + str(i)] = str(Dato[2][4])  # Más datos
-        sheet["H" + str(i)] = str(Dato[3][1])  # Más datos
-        sheet["U" + str(i)] = str(Dato[3][2])  # Más datos
-        sheet["V" + str(i)] = str(Dato[3][3])  # Más datos
-        sheet["W" + str(i)] = str(Dato[3][4])  # Más datos
-        sheet["I" + str(i)] = str(Dato[4][1])  # Más datos
-        sheet["X" + str(i)] = str(Dato[4][2])  # Más datos
-        sheet["Y" + str(i)] = str(Dato[4][3])  # Más datos
-        sheet["Z" + str(i)] = str(Dato[4][4])  # Más datos
-        sheet["J" + str(i)] = str(Dato[5][1])  # Más datos
-        sheet["AA" + str(i)] = str(Dato[5][2])  # Más datos
-        sheet["AB" + str(i)] = str(Dato[5][3])  # Más datos
-        sheet["AC" + str(i)] = str(Dato[5][4])  # Más datos
-        sheet["K" + str(i)] = str(Dato[6][1])  # Más datos
-        sheet["AD" + str(i)] = str(Dato[6][2])  # Más datos
-        sheet["AE" + str(i)] = str(Dato[6][3])  # Más datos
-        sheet["AF" + str(i)] = str(Dato[6][4])  # Más datos
-        for j in range(1, 8):  # Ajusta según la cantidad de Dato
-                col_letter = chr(70 + j)  # Calcula la letra de la columna
-                if sheet[col_letter + str(i)].value is None and len(Dato) > j:
-                    sheet[col_letter + str(i)] = str(Dato[j])  # Asigna el valor
+    print(code)
+    if tipo=="Sindicato":
+        for i in range(4, x + 4):
+            Dato = verificar_asistencias(code[(i - 4)],periodo)
+            if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
+                sheet["A" + str(i)] = str(Dato[0][0])  # Código de empleado
+            sheet["B" + str(i)] = str(nombres[i - 4])  # Nombre completo del empleado
+            sheet["C" + str(i)] = str(ape[i - 4])  # Nombre completo del empleado
+            sheet["D" + str(i)] = str(ape2[i - 4])  # Nombre completo del empleado
+            # Solo asignar si hay datos en Dato[0] y Dato[0][1]
+            sheet["E" + str(i)] = 1 if Dato[0][1] > 0 else 0  # Dias_Asistencia (0 o 1)
+            sheet["L" + str(i)] = str(Dato[0][2])  # Horas_Extra
+            sheet["M" + str(i)] = str(Dato[0][3])  # Turnos_Extras
+            sheet["N" + str(i)] = str(Dato[0][4])  # Descansos_Trabajados
+            # Asegúrate de verificar la longitud de Dato[1] y demás
+            sheet["F" + str(i)] = str(Dato[1][1])  # Datos de asistencia
+            sheet["O" + str(i)] = str(Dato[1][2])  # Más datos
+            sheet["P" + str(i)] = str(Dato[1][3])  # Más datos
+            sheet["Q" + str(i)] = str(Dato[1][4])  # Más datos
+            sheet["G" + str(i)] = str(Dato[2][1])  # Datos adicionales
+            sheet["R" + str(i)] = str(Dato[2][2])  # Más datos
+            sheet["S" + str(i)] = str(Dato[2][3])  # Más datos
+            sheet["T" + str(i)] = str(Dato[2][4])  # Más datos
+            sheet["H" + str(i)] = str(Dato[3][1])  # Más datos
+            sheet["U" + str(i)] = str(Dato[3][2])  # Más datos
+            sheet["V" + str(i)] = str(Dato[3][3])  # Más datos
+            sheet["W" + str(i)] = str(Dato[3][4])  # Más datos
+            sheet["I" + str(i)] = str(Dato[4][1])  # Más datos
+            sheet["X" + str(i)] = str(Dato[4][2])  # Más datos
+            sheet["Y" + str(i)] = str(Dato[4][3])  # Más datos
+            sheet["Z" + str(i)] = str(Dato[4][4])  # Más datos
+            sheet["J" + str(i)] = str(Dato[5][1])  # Más datos
+            sheet["AA" + str(i)] = str(Dato[5][2])  # Más datos
+            sheet["AB" + str(i)] = str(Dato[5][3])  # Más datos
+            sheet["AC" + str(i)] = str(Dato[5][4])  # Más datos
+            sheet["K" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AD" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AE" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["AF" + str(i)] = str(Dato[6][4])  # Más datos
+            for j in range(1, 8):  # Ajusta según la cantidad de Dato
+                    col_letter = chr(70 + j)  # Calcula la letra de la columna
+                    if sheet[col_letter + str(i)].value is None and len(Dato) > j:
+                        sheet[col_letter + str(i)] = str(Dato[j])  # Asigna el valor
+    else:
+        for i in range(4, x + 4):
+            print(code[(i-4)])
+            Dato = verificar_asistencias(code[(i - 4)],periodo)
+            if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
+                sheet["A" + str(i)] = str(Dato[0][0])  # Código de empleado
+            sheet["B" + str(i)] = str(nombres[i - 4])  # Nombre completo del empleado
+            sheet["C" + str(i)] = str(ape[i - 4])  # Nombre completo del empleado
+            sheet["D" + str(i)] = str(ape2[i - 4])  # Nombre completo del empleado
+            # Solo asignar si hay datos en Dato[0] y Dato[0][1]
+            sheet["E" + str(i)] = 1 if Dato[0][1] > 0 else 0  # Dias_Asistencia (0 o 1)
+            sheet["U" + str(i)] = str(Dato[0][2])  # Horas_Extra
+            sheet["V" + str(i)] = str(Dato[0][3])  # Turnos_Extras
+            sheet["W" + str(i)] = str(Dato[0][4])  # Descansos_Trabajados
+            # Asegúrate de verificar la longitud de Dato[1] y demás
+            sheet["F" + str(i)] = str(Dato[1][1])  # Datos de asistencia
+            sheet["X" + str(i)] = str(Dato[1][2])  # Más datos
+            sheet["Y" + str(i)] = str(Dato[1][3])  # Más datos
+            sheet["Z" + str(i)] = str(Dato[1][4])  # Más datos
+            sheet["G" + str(i)] = str(Dato[2][1])  # Datos adicionales
+            sheet["AA" + str(i)] = str(Dato[2][2])  # Más datos
+            sheet["AB" + str(i)] = str(Dato[2][3])  # Más datos
+            sheet["AC" + str(i)] = str(Dato[2][4])  # Más datos
+            sheet["H" + str(i)] = str(Dato[3][1])  # Más datos
+            sheet["AD" + str(i)] = str(Dato[3][2])  # Más datos
+            sheet["AE" + str(i)] = str(Dato[3][3])  # Más datos
+            sheet["AF" + str(i)] = str(Dato[3][4])  # Más datos
+            sheet["I" + str(i)] = str(Dato[4][1])  # Más datos
+            sheet["AG" + str(i)] = str(Dato[4][2])  # Más datos
+            sheet["AH" + str(i)] = str(Dato[4][3])  # Más datos
+            sheet["AI" + str(i)] = str(Dato[4][4])  # Más datos
+            sheet["J" + str(i)] = str(Dato[5][1])  # Más datos
+            sheet["AJ" + str(i)] = str(Dato[5][2])  # Más datos
+            sheet["AK" + str(i)] = str(Dato[5][3])  # Más datos
+            sheet["AL" + str(i)] = str(Dato[5][4])  # Más datos
+            sheet["K" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AM" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AN" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["AO" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["L" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AP" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AQ" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["AR" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["M" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AS" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AT" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["AU" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["N" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AV" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AW" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["AX" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["O" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["AY" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["AZ" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BA" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["P" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["BB" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["BC" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BD" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["Q" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["BE" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["BF" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BG" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["R" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["BH" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["BI" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BJ" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["S" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["BK" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["BL" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BM" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["T" + str(i)] = str(Dato[6][1])  # Más datos
+            sheet["BN" + str(i)] = str(Dato[6][2])  # Más datos
+            sheet["BO" + str(i)] = str(Dato[6][3])  # Más datos
+            sheet["BP" + str(i)] = str(Dato[6][4])  # Más datos
+            for j in range(1, 15):  # Ajusta según la cantidad de Dato
+                    col_letter = chr(70 + j)  # Calcula la letra de la columna
+                    if sheet[col_letter + str(i)].value is None and len(Dato) > j:
+                        sheet[col_letter + str(i)] = str(Dato[j])  # Asigna el valor
     # Ajustar el ancho de las columnas automáticamente
     for col in sheet.columns:
         max_length = 0
@@ -377,15 +465,16 @@ def excel_add(id,depar,tipo,periodo):
         adjusted_width = (max_length + 2)  # Ajustar ligeramente
         sheet.column_dimensions[col_letter].width = adjusted_width
     # Guardar el archivo de Excel actualizado
-    workbook.save("C:\\Users\\usuario\\Downloads\\Nomina\\Formatollenado.xlsx")
+    workbook.save(ruta+"\\Formatollenado.xlsx")
     periodo=periodo.replace(" ", "_")
     periodo=periodo.replace("/", "-")
     # Convertir a PDF usando pandas y matplotlib
-    ruta_excel = "C:\\Users\\usuario\\Downloads\\Nomina\\Formatollenado.xlsx"
-    pdf_output = "C:\\Users\\usuario\\Downloads\\Nomina\\output\\Reporte_"+periodo
-    excel_to_pdf(ruta_excel, pdf_output)   
-def excel_to_pdf(excel_file, pdf_file):
+    ruta_excel = ruta+"\\Formatollenado.xlsx"
+    pdf_output = ruta+"\\Reporte_"+periodo
+    excel_to_pdf(ruta_excel, pdf_output,tipo)   
+def excel_to_pdf(excel_file, pdf_file,tipo):
     # Initialize Excel application (headless)
+    ruta= os.path.dirname(__file__)
     excel = win32.gencache.EnsureDispatch("Excel.Application")
     excel.Visible = False  # Keep Excel hidden
     # Open the workbook
@@ -397,7 +486,6 @@ def excel_to_pdf(excel_file, pdf_file):
     # Clean up resources
     del excel
     def encrypt_pdf(input_pdf, output_pdf, user_password, owner_password):
-        print("hoila")
         # Encrypt the PDF using pikepdf
         with pikepdf.open(input_pdf) as pdf:
             pdf.save(
@@ -409,8 +497,11 @@ def excel_to_pdf(excel_file, pdf_file):
                 )
             )
     # Set file paths and passwords
-    original_pdf = r"C:\Users\usuario\Downloads\Nomina\output\output.pdf"
-    encrypted_pdf = "protected_document.pdf"
+    original_pdf = ruta+"\\output\\output.pdf"
+    if tipo=="Sindicato":
+        encrypted_pdf = "protected_document.pdf"
+    else:
+        encrypted_pdf = "protected_document_Quincenal.pdf"
     user_password = "userpass123"
     owner_password = "ownerpass456"
     # Create the PDF and then encrypt it
@@ -1208,6 +1299,9 @@ class AnimatedApp(ft.UserControl):
         print("Cierre de sesión realizado.")  # Puedes cambiar esta línea por la lógica de cierre de sesión que desees.
 
     def send_data(self,tipo_d,tipo_e,periodos):
+        tipo_e = self.dropdown_tipo_empleado.value
+        tipo_d = self.dropdown_departamentos.value
+        print(tipo_e,tipo_d,periodos)
         excel_add(0,tipo_d,tipo_e,periodos)
         print("Datos enviados.")  # Puedes reemplazar esto con la lógica que necesites para enviar los datos
     def bar_icons(self, e):
