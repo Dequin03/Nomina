@@ -946,28 +946,22 @@ class AnimatedApp(ft.UserControl):
         periodos=""
         global multireg
         multireg=False
-        tipo_dep = self.dropdown_departamentos.value
-        tipo_empleado = self.dropdown_tipo_empleado.value
-        empleados=obtener_empleados(tipo_dep,tipo_empleado)
-        periodos=self.tipo_empleado_cambiado()
-        print(periodos,empleados)
-        [(print(empleado),agregar_dato(
-                                                            {dia: var for dia, var in asis.items()},
-                                                            "",
-                                                            periodos,
-                                                            True,
-                                                            empleado[1][0],
-                                                            HE_entries,
-                                                            "",
-                                                            DT_entries,
-                                                            TE_entries,
-                                                            "Domingo",
-                                                            empleado[1][1]
-                                                        ))for empleado in enumerate(empleados)]
-        alert=ft.AlertDialog(
-        title=ft.Text("Datos añadidos correctamente."),
-        )
-        self.page.open(alert)
+        for i,emp_id in enumerate(todos):
+            if i==len(todos)-1:
+                multireg=True
+            agregar_dato(
+                todos[emp_id]['dias'],
+                todos[emp_id]['comentario'],
+                periodos,
+                todos[emp_id]['aprobar'].get(),
+                emp_id,
+                todos[emp_id]['entries_HE'],
+                todos[emp_id]['df'].get(),
+                todos[emp_id]['entries_DT'],
+                todos[emp_id]['entries_TE'],
+                todos[emp_id]['descanso'],
+                todos[emp_id]['nomina']
+            )
     # Función para abrir el diálogo de departamentos
     def abrir_ventana_departamentos(self, e):
         # Agregar el diálogo a la lista de overlays y abrirlo
