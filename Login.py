@@ -96,7 +96,6 @@ def calcular_fechas():
     return dias_festivos
 def check_dias(dia,codigoempleado,periodo):
     try:
-        # Conectar a la base de datos
         db = ConexionBD(host, database="datos")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
@@ -108,7 +107,8 @@ def check_dias(dia,codigoempleado,periodo):
             print("entro")
             db.cerrar()
             if dia == "SABADO" or dia=="DOMINGO":
-                return False
+                if "/" not in str(resultado):
+                    return False
             return True
         elif "/" not in str(resultado):
             db.cerrar()
@@ -702,6 +702,9 @@ class AnimatedApp(ft.UserControl):
          # Crear el Dropdown de departamentos vacío inicialmente
         var=Variables()
         periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries=var.obtener_todos()
+        self.HE_entries=HE_entries
+        self.TE_entries=TE_entries
+        self.DT_entries=DT_entries
         self.periodos=periodos
         self.asis=asis
         self.dropdown_departamentos = ft.Dropdown(
@@ -723,7 +726,7 @@ class AnimatedApp(ft.UserControl):
             text="Añadir Todos",
             bgcolor=ft.colors.BLUE_800,
             color=ft.colors.WHITE,
-            on_click=self.enviar_todos(HE_entries)  # Cambiamos el evento a una nueva función
+            on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
         )
         # Crear el diálogo modal para mostrar los departamentos
         self.dialog_departamentos = ft.AlertDialog(
@@ -866,7 +869,8 @@ class AnimatedApp(ft.UserControl):
                                         on_click=lambda e:self.send_data(tipo_d,tipo_e,self.periodos)  # Función que manejará el evento del botón
                                     )
                                 ),
-                                self.add_project_button  
+                                self.add_project_button,
+                                self.add_enviar_todos  
                             ],scroll=ft.ScrollMode.ALWAYS,
                             spacing=10
                         )
@@ -894,6 +898,7 @@ class AnimatedApp(ft.UserControl):
             hint_text="Buscar Proyecto...",
             on_change=self.filtrar_departamentos
         )
+        
         self.dropdown_usuarios=ft.Dropdown(
             width=150,
             height=40,
@@ -927,11 +932,29 @@ class AnimatedApp(ft.UserControl):
                 self.show_selected_button
             ]
         )
-    def añadir_todos():
+    def añadir_todos(self,e,asis,HE_entries,DT_entries,TE_entries):
         todos={}
         periodos=""
         global multireg
         multireg=False
+        tipo_dep = self.dropdown_departamentos.value
+        tipo_empleado = self.dropdown_tipo_empleado.value
+        empleados=obtener_empleados(tipo_dep,tipo_empleado)
+        periodos=self.tipo_empleado_cambiado()
+        print(periodos,empleados)
+        [(print(empleado),agregar_dato(
+                                                            {dia: var for dia, var in asis.items()},
+                                                            "",
+                                                            periodos,
+                                                            True,
+                                                            empleado[1][0],
+                                                            HE_entries,
+                                                            "",
+                                                            DT_entries,
+                                                            TE_entries,
+                                                            "Domingo",
+                                                            empleado[1][1]
+                                                        ))for empleado in enumerate(empleados)]
         for i,emp_id in enumerate(todos):
             if i==len(todos)-1:
                 multireg=True
@@ -976,7 +999,6 @@ class AnimatedApp(ft.UserControl):
     def llenar_departamentos(self):
         # Crear las opciones para el Dropdown de departamentos
         opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
-
         # Asignar las opciones generadas al Dropdown de departamentos
         self.dropdown_departamentos.options = opciones_departamentos
     def datos(self,e,asis,HE_entries,DT_entries,TE_entries):
@@ -1006,17 +1028,17 @@ class AnimatedApp(ft.UserControl):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             HE_entries[self.control.key]=self.control.value
-            print(HE_entries)
+            self.HE_entries[self.control.key]=self.control.value
         def updateDT(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             DT_entries[self.control.key]=self.control.value
-            print(DT_entries)
+            self.DT_entries[self.control.key]=self.control.value
         def updateTE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             TE_entries[self.control.key]=self.control.value
-            print(TE_entries)
+            self.TE_entries[self.control.key]=self.control.value
         # Crear las opciones para el Dropdown de departamentos
         tipo_dep = self.dropdown_departamentos.value
         tipo_empleado = self.dropdown_tipo_empleado.value
@@ -1268,16 +1290,11 @@ class AnimatedApp(ft.UserControl):
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
         self.update()
     def checkbox_changed(e,x,asist,dias_semana,nomina):
-        print("x2",dias_semana[x.control.key[1]],(x.control.key[0],x.control.key[1]))
-        print(x.control.value)
         if nomina=="1":
             e.asis[dias_semana[x.control.key[1]],(x.control.key[0],x.control.key[1])]=int(x.control.value)
         else:
             e.asis[x.control.key[1],x.control.key[0]]=int(x.control.value)
-        print(e.asis)
     def asis_changed(e,x,asist,dias_semana,nomina):
-        print("x1",x[1],x[0])
-        print(asist)
         if nomina=="1":
             e.asis[x[1],x[0]]=int(asist)
         else:
@@ -1427,7 +1444,6 @@ def main(page: ft.Page):
                         username,
                         password,
                         ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
-                        # ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/home")),
                     ],
                 )
             )
