@@ -34,6 +34,14 @@ import os
 from datetime import datetime, timedelta,date
 from openpyxl import load_workbook,Workbook
 from openpyxl.utils import get_column_letter
+import logging
+
+# Configuración del registro
+logging.basicConfig(
+    filename="error_log.log",  # Nombre del archivo de log
+    level=logging.ERROR,       # Nivel de registro (ERROR, WARNING, INFO, DEBUG)
+    format="%(asctime)s - %(levelname)s - %(message)s"  # Formato del mensaje
+)
 class Variables:
     def __init__(self):
         self.KEY_ENCRYPT_DECRYPT = "r3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4rr3c6rs0sm4t3r14l3sj6m4p4mm4z4tl4ns1n4l04l4p13ld3lm4r"
@@ -96,7 +104,7 @@ def calcular_fechas():
     return dias_festivos
 def check_dias(dia,codigoempleado,periodo):
     try:
-        db = ConexionBD(host, database="datos")
+        db = ConexionBD(host, database="datos",user="",password="")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
         resultado = db.ejecutar_consulta("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",(codigoempleado,dia,periodo))
@@ -113,9 +121,9 @@ def check_dias(dia,codigoempleado,periodo):
         db.cerrar()    
         return True
     except Exception as e:
-        print("Error", f"No se pudo Verificar: {e}")
+        logging.error("Error", f"No se pudo Verificar: {e}")
 def obtener_ALL_departamentos():
-    db = ConexionBD(host,database="BdTrabajadTemporal")
+    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
     db.conectar()
     resultados=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM DEPARTAM")
     depars=[]
@@ -125,7 +133,7 @@ def obtener_ALL_departamentos():
     return depars
 def GET_USER():
     try:
-        db = ConexionBD(host,database="JumapamSistemas")
+        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
         db.conectar()
         resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM HIS_SISTEMAS_PERMISOS WHERE ID_SISTEMA = 12")
         id=resultado
@@ -136,22 +144,25 @@ def GET_USER():
         db.cerrar()
         return iD
     except Exception as e:
-        print("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
+        logging.error("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
 def UPDATE_USER(id,clave):
     try:
-        db = ConexionBD(host,database="JumapamSistemas")
+        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
         db.conectar()
         for clavedep in clave:
-            print(clavedep)
-            resultado=db.ejecutar_consulta("SELECT ID_USuARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",(id,clavedep))
-            if resultado.fetchone() is None:
-                db.ejecutar_consulta("INSERT INTO HIS_SISTEMAS_DEPUSER VALUES(?,?)",(id,clavedep))
-                db.commit()
+            print(id,clavedep)
+            resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",(id,str(clavedep)))
+            if not resultado:
+                print("a")
+                db.ejecutar_consulta("INSERT INTO HIS_SISTEMAS_DEPUSER VALUES(?,?)",(id,str(clavedep)),commit=True)
+                print("out")
             else:
                 print(resultado)
+            resultado2=db.ejecutar_consulta("SELECT NOMBRE_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE ID_USUARIO = ?",id)
         db.cerrar()
+        return resultado2
     except Exception as e:
-        print("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
+        logging.error("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
 def callback():
     global buttonClicked
     buttonClicked = not buttonClicked 
@@ -189,7 +200,7 @@ def obtener_empleados(depar,tipo):
         tipoc=2
     else:
         tipoc=1
-    db = ConexionBD(host,database="BdTrabajadTemporal")
+    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
     db.conectar()
     print(depar,tipoc)
     resultados=db.ejecutar_consulta("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=?",(depar,tipoc))
@@ -200,7 +211,7 @@ def obtener_empleados_search(depar,tipo,ID):
         tipoc=2
     else:
         tipoc=1
-    db = ConexionBD(host,database="BdTrabajadTemporal")
+    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
     db.conectar()
     print(depar,tipoc)
     resultados=db.ejecutar_consulta("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=? AND TRABAJAD.CLAVE_TRABAJADOR LIKE '%'+?",(depar,tipoc,ID))
@@ -211,13 +222,13 @@ def obtener_empleados_search(depar,tipo,ID):
 def obtener_periodo(x):
     hoy=date.today()
     if x==1:
-        db = ConexionBD(host,database="BdTrabajadTemporal")
+        db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
         db.conectar()
         periodo =db.ejecutar_consulta("SELECT CLAVE_PERIODO, CLAVE_TIPO_NOMINA, DESCRIPCION FROM PERIODO WHERE CLAVE_TIPO_NOMINA=1 AND ? BETWEEN FECHA_I AND FECHA_F",str(hoy))
         db.cerrar()
         return periodo
     else:
-        db = ConexionBD(host,database="BdTrabajadTemporal")
+        db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
         db.conectar()
         periodo =db.ejecutar_consulta("SELECT CLAVE_PERIODO, CLAVE_TIPO_NOMINA, DESCRIPCION FROM PERIODO WHERE CLAVE_TIPO_NOMINA=2 AND ? BETWEEN FECHA_I AND FECHA_F",str(hoy))
         db.cerrar()
@@ -287,7 +298,7 @@ def excel():
 def verificar_asistencias(codigoEmpleado,periodo):
     try:
         # Conectar a la base de datos
-        db = ConexionBD(host, database="datos")
+        db = ConexionBD(host, database="datos",user="",password="")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
         resultado = db.ejecutar_consulta("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=? AND Periodo=?",(codigoEmpleado,periodo))
@@ -302,7 +313,7 @@ def verificar_asistencias(codigoEmpleado,periodo):
         db.cerrar()
         return asistencia_modificada if asistencia_modificada else None  # Asegurarse de devolver None si no hay datos
     except Exception as e:
-        print("Error", f"Verificando: {e}")
+        logging.error("Error", f"Verificando: {e}")
 def excel_add(id,depar,tipo,periodo):
     # Cargar el archivo de Excel
     ruta= os.path.dirname(__file__)
@@ -530,7 +541,7 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
     vari=Variables()
     year,month,day,dias_festivos,fechas_seleccionadas,_=vari.obtener_fechas()
     dias_festivos=calcular_fechas()
-    db = ConexionBD(host, database="datos")
+    db = ConexionBD(host, database="datos",user="",password="")
     global buttonClicked
     print(dias)
     print(periodo)
@@ -627,7 +638,7 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                 print("Éxito", "Datos actualizados correctamente.")
         db.cerrar()
     except Exception as e:
-        print("Error", f"No se pudo añadir o actualizar el dato: {e}")
+        logging.error("Error", f"No se pudo añadir o actualizar el dato: {e}")
 # Specify the Excel and PDF file paths
 class ConexionBD:
     def __init__(self, host, database, user, password, driver="SQL Server"):
@@ -642,8 +653,8 @@ class ConexionBD:
         """
         self.host = host
         self.database = database
-        self.user = user
-        self.password = password
+        self.user = "usuario"
+        self.password = "userpass"
         self.driver = driver
         self.conexion = None
         self.cursor = None
@@ -655,13 +666,14 @@ class ConexionBD:
         try:
             self.conexion = pyodbc.connect(
                 f"DRIVER={{{self.driver}}};"
-                f"SERVER={self.host};"
+                f"SERVER={self.host}\\SQLEXPRESS;"
                 f"DATABASE={self.database};"
                 f"UID={self.user};"  # Usuario
                 f"PWD={self.password};"  # Contraseña
             )
             self.cursor = self.conexion.cursor()
         except Exception as e:
+            logging.error((f"Error al conectar con la base de datos {self.database}: {e}"))
             raise ConnectionError(f"Error al conectar con la base de datos {self.database}: {e}")
 
 
@@ -675,6 +687,7 @@ class ConexionBD:
         """
         try:
             if not self.cursor:
+                logging.error("No hay una conexión activa. Llama a 'conectar' primero.")
                 raise ConnectionError("No hay una conexión activa. Llama a 'conectar' primero.")
             
             self.cursor.execute(query, parametros or ())
@@ -688,6 +701,7 @@ class ConexionBD:
                 self.conexion.commit()
                 return None
         except Exception as e:
+            logging.error(f"Error al ejecutar la consulta: {e}")
             raise RuntimeError(f"Error al ejecutar la consulta: {e}")
 
     def commit(self):
@@ -716,6 +730,7 @@ class AnimatedApp(ft.UserControl):
         self.DT_entries=DT_entries
         self.periodos=periodos
         self.asis={}
+        self.valid={}
         self.dropdown_departamentos = ft.Dropdown(
             width=150,
             height=40,
@@ -723,6 +738,7 @@ class AnimatedApp(ft.UserControl):
             color=ft.colors.BLACK,
             hint_text="Seleccione...",
             padding=ft.padding.only(left=10, right=10),
+            disabled=True,
             on_change=lambda e:self.cambio_departamentos(self.periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries)
         )
         self.add_project_button = ft.ElevatedButton(
@@ -942,26 +958,32 @@ class AnimatedApp(ft.UserControl):
             ]
         )
     def añadir_todos(self,e,asis,HE_entries,DT_entries,TE_entries):
-        todos={}
-        periodos=""
-        global multireg
-        multireg=False
-        for i,emp_id in enumerate(todos):
-            if i==len(todos)-1:
-                multireg=True
-            agregar_dato(
-                todos[emp_id]['dias'],
-                todos[emp_id]['comentario'],
-                periodos,
-                todos[emp_id]['aprobar'].get(),
-                emp_id,
-                todos[emp_id]['entries_HE'],
-                todos[emp_id]['df'].get(),
-                todos[emp_id]['entries_DT'],
-                todos[emp_id]['entries_TE'],
-                todos[emp_id]['descanso'],
-                todos[emp_id]['nomina']
-            )
+        try:
+            todos={}
+            periodos=""
+            global multireg
+            multireg=False
+            tipo_dep = self.dropdown_departamentos.value
+            tipo_empleado = self.dropdown_tipo_empleado.value
+            empleados=obtener_empleados(tipo_dep,tipo_empleado)
+            periodos=self.tipo_empleado_cambiado()
+            print(periodos,empleados)
+            [agregar_dato(
+                                                                {dia: var for dia, var in asis.items()},
+                                                                "",
+                                                                periodos,
+                                                                self.valid[empleado[1][1],empleado[1][0]],
+                                                                empleado[1][0],
+                                                                HE_entries,
+                                                                "",
+                                                                DT_entries,
+                                                                TE_entries,
+                                                                "Domingo",
+                                                                empleado[1][1]
+                                                            )for empleado in enumerate(empleados)]
+        except Exception as e:
+            logging.error(f"Error en mostrar_departamentos_seleccionados: {e}")
+            print(f"Error en mostrar_departamentos_seleccionados: {e}")
     # Función para abrir el diálogo de departamentos
     def abrir_ventana_departamentos(self, e):
         # Agregar el diálogo a la lista de overlays y abrirlo
@@ -985,8 +1007,31 @@ class AnimatedApp(ft.UserControl):
 
     # Función para mostrar los departamentos seleccionados
     def mostrar_departamentos_seleccionados(self, e):
-        seleccionados = [checkbox.label for checkbox in self.checkboxes_departamentos if checkbox.value]
-        print("Departamentos seleccionados:", seleccionados)
+        try:
+            print(self.dropdown_usuarios.value)
+            if self.dropdown_usuarios.value != "":
+                seleccionados = [checkbox.label for checkbox in self.checkboxes_departamentos if checkbox.value]
+                x=self.dropdown_usuarios.value
+                usuario=UPDATE_USER(x,seleccionados)
+                departamentos.clear()
+                print("usuario:",usuario[0])
+                obtener_departamentos(usuario[0])
+                opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
+                # Asignar las opciones generadas al Dropdown de departamentos
+                self.dropdown_departamentos.options = opciones_departamentos
+                self.update()
+                alert=ft.AlertDialog(
+                title=ft.Text("Proyectos Añadidos."),
+                )
+                self.page.open(alert)
+            else:
+                alert=ft.AlertDialog(
+                title=ft.Text("Usuario no Seleccionado."),
+                )
+                self.page.open(alert)
+        except Exception as e:
+            logging.error(f"Error en mostrar_departamentos_seleccionados: {e}")
+            print(f"Error en mostrar_departamentos_seleccionados: {e}")
     def llenar_departamentos(self):
         # Crear las opciones para el Dropdown de departamentos
         opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
@@ -1003,7 +1048,7 @@ class AnimatedApp(ft.UserControl):
                                                             {dia: var for dia, var in self.asis.items()},
                                                             "",
                                                             periodos,
-                                                            True,
+                                                            self.valid[e.control.key[1],e.control.key[0]],
                                                             e.control.key[0],
                                                             HE_entries,
                                                             "",
@@ -1079,7 +1124,7 @@ class AnimatedApp(ft.UserControl):
                                                                 ),
                                                             ]
                                                         ) for __ in range(7)],  # Checkbox para cada día
-                                                            ft.Checkbox(value=False),
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
                                                             ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e: self.datos(e,asis,HE_entries,DT_entries,TE_entries))
                                                         ],
                                                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -1092,6 +1137,7 @@ class AnimatedApp(ft.UserControl):
                 for __ in range(7):
                     x=check_dias(semana[__],_[0],self.periodos)
                     self.asis_changed(((str(_[0]),__),semana[__]),x,dias_semana,_[1])
+                    self.Aprovecheckbegin((_[0],_[1],False))    
         else:
             diasq=obtener_quincenas()
             dias=sortdias(diasq)
@@ -1134,7 +1180,7 @@ class AnimatedApp(ft.UserControl):
                                                                 ),
                                                             ]
                                                         ) for i,(dia,var) in enumerate(dias.items())],  # Checkbox para cada día
-                                                            ft.Checkbox(value=False),
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
                                                             ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,asis,HE_entries,DT_entries,TE_entries))
                                                         ],scroll=ft.ScrollMode.ALWAYS,
                                                         alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -1146,6 +1192,7 @@ class AnimatedApp(ft.UserControl):
                 for i,(dia,var) in enumerate(dias.items()):
                     x=check_dias(dias_semana[diasq[i]],_[0],self.periodos)
                     self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])
+                    self.Aprovecheckbegin((_[0],_[1],False))    
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
         self.white_container.content=ft.Text(self.periodos, color=ft.colors.BLACK)
         print("ASD",self.asis)
@@ -1214,7 +1261,7 @@ class AnimatedApp(ft.UserControl):
                                                                 ),
                                                             ]
                                                         ) for __ in range(7)],  # Checkbox para cada día
-                                                            ft.Checkbox(value=False),
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
                                                             ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,self.asis,HE_entries,DT_entries,TE_entries))
                                                         ],
                                                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -1226,7 +1273,8 @@ class AnimatedApp(ft.UserControl):
             for index,_ in enumerate(empleados):
                 for __ in range(7):
                     e=check_dias(semana[__],_[0],self.periodos)
-                    self.asis_changed((str(_[0]),__),x,dias_semana,_[1])   
+                    self.asis_changed((str(_[0]),__),x,dias_semana,_[1])
+                    self.Aprovecheckbegin((_[0],_[1],False))       
         else:
             diasq=obtener_quincenas()
             dias=sortdias(diasq)
@@ -1269,7 +1317,7 @@ class AnimatedApp(ft.UserControl):
                                                                 ),
                                                             ]
                                                         ) for i,(dia,var) in enumerate(dias.items())],  # Checkbox para cada día
-                                                            ft.Checkbox(value=False),
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
                                                             ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,self.asis,HE_entries,DT_entries,TE_entries))
                                                         ],
                                                         alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -1281,10 +1329,27 @@ class AnimatedApp(ft.UserControl):
             for index,_ in enumerate(empleados):
                 for i,(dia,var) in enumerate(dias.items()):
                     x=check_dias(dias_semana[diasq[i]],_[0],self.periodos)
-                    self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])        
+                    self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])
+                    self.Aprovecheckbegin((_[0],_[1],False))        
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
         print("ASD",self.asis) 
         self.update()
+    def Aprovecheck(self,e):
+        try:
+            print("WORKS")
+            print(e.control.key[1],e.control.key[0])
+            self.valid[e.control.key[1],e.control.key[0]]=e.control.value
+            print(self.valid)
+        except Exception as e:
+            logging.error("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
+    def Aprovecheckbegin(self,e):
+        try:
+            print("WORKS")
+            print(e[1],e[0])
+            self.valid[e[1],e[0]]=e[2]
+            print(self.valid)
+        except Exception as e:
+            logging.error("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
     def checkbox_changed(e,x,asist,dias_semana,nomina):
         if nomina=="1":
             e.asis[dias_semana[x.control.key[1]],(x.control.key[0],x.control.key[1])]=int(x.control.value)
@@ -1299,6 +1364,7 @@ class AnimatedApp(ft.UserControl):
             e.asis[x[1],x[0]]=int(asist)
     def tipo_empleado_cambiado(self, e=None):
         # Obtiene el valor seleccionado en el primer Dropdown
+        self.dropdown_departamentos.disabled=False
         tipo_empleado = self.dropdown_tipo_empleado.value
         # Actualiza el Dropdown de departamentos basado en el valor seleccionado
         if tipo_empleado == "Confianza" or tipo_empleado=="":
@@ -1308,6 +1374,7 @@ class AnimatedApp(ft.UserControl):
         for i, periodo in enumerate(periodos):
             periodos=periodo[2]
         self.periodos=periodos
+        self.update()
         return periodos
     def logout(self, e):
         # Acción a realizar al hacer clic en "Cerrar sesión"
@@ -1340,10 +1407,12 @@ def encrypt(plain_text):
     return base64.b64encode(outx_).decode('utf-8')
 host=socket.gethostname()
 departamentos=[]
-def obtener_departamentos(user):
-        db = ConexionBD(host,database="JumapamSistemas")
+us=""
+def obtener_departamentos(usern):
+        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
         db.conectar()
-        resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+        print(usern)
+        resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",usern)
         id=str(resultado[0][0])
         print(id)
         res=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO=?",id)
@@ -1359,9 +1428,9 @@ def main(page: ft.Page):
     )
     def verificar_acceso(username, password):
         try:
-            db = ConexionBD(host,database="JumapamSistemas")
+            db = ConexionBD(host,database="JumapamSistemas",user="",password="")
             db.conectar()
-            usuario = username
+            usuario=username
             password = password
             version = '1.0'
             id_sistema = 12
@@ -1377,7 +1446,7 @@ def main(page: ft.Page):
             return False
 
         except Exception as e:
-            print("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
+            logging.error("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
         # Cerrar la conexión
         db.cerrar()
         # Función que maneja el inicio de sesión
@@ -1386,6 +1455,7 @@ def main(page: ft.Page):
         password = encrypt(password)    
         if verificar_acceso(username, password):
             obtener_departamentos(username)
+            us=username
             page.views.append(
                 ft.View(
                 "/home",

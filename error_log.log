@@ -1,0 +1,721 @@
+2024-11-29 11:23:45,137 - ERROR - Error al ejecutar la consulta: ('Invalid parameter type.  param-index=0 param-type=Option', 'HY105')
+2024-11-29 11:27:41,266 - ERROR - Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value 'dropdownoption {'key': '1'}' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 11:29:35,817 - ERROR - Error al ejecutar la consulta: ('Invalid parameter type.  param-index=0 param-type=Option', 'HY105')
+2024-11-29 11:35:33,834 - ERROR - Error al ejecutar la consulta: ('Invalid parameter type.  param-index=0 param-type=Option', 'HY105')
+2024-11-29 11:56:45,800 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'NoneType' object has no attribute 'update'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1450, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1414, in iniciar_sesion
+    AnimatedApp()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 778, in __init__
+    self.llenar_departamentos()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1012, in llenar_departamentos
+    self.page.update()
+AttributeError: 'NoneType' object has no attribute 'update'
+2024-11-29 11:56:49,759 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'NoneType' object has no attribute 'update'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1450, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1414, in iniciar_sesion
+    AnimatedApp()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 778, in __init__
+    self.llenar_departamentos()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1012, in llenar_departamentos
+    self.page.update()
+AttributeError: 'NoneType' object has no attribute 'update'
+2024-11-29 11:57:23,364 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'NoneType' object has no attribute 'update'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1450, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1414, in iniciar_sesion
+    AnimatedApp()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 778, in __init__
+    self.llenar_departamentos()
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1012, in llenar_departamentos
+    self.page.update()
+AttributeError: 'NoneType' object has no attribute 'update'
+2024-11-29 11:58:58,768 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 11:58:58,770 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1365, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 11:59:07,608 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 11:59:07,610 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1365, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 11:59:14,460 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 11:59:14,461 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1365, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:00:13,599 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:00:13,600 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1365, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:03:15,638 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:03:15,641 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1366, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:03:36,422 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:03:36,423 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1366, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:06:12,958 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:06:12,960 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1367, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:10:09,723 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:10:09,724 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1367, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:12:49,970 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:12:49,972 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1369, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:13:41,067 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:13:41,069 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1369, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:14:42,304 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:14:42,306 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1369, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:14:50,460 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:14:50,461 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1369, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:16:07,367 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:16:07,369 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1005, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1369, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:24:04,535 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:24:04,537 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1006, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1370, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:25:22,800 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:25:22,803 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError("Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')")>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 692, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.Error: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1007, in mostrar_departamentos_seleccionados
+    obtener_departamentos(usuario)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1371, in obtener_departamentos
+    resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",user)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 704, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:26:29,587 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    print(departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:28:05,140 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    print(departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:28:14,067 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    print(departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:28:50,478 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    print(departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:31:30,630 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1004, in mostrar_departamentos_seleccionados
+    print("1",departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:32:47,389 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1002, in mostrar_departamentos_seleccionados
+    print("1",departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:33:16,881 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1002, in mostrar_departamentos_seleccionados
+    UPDATE_USER(x,seleccionados)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:35:15,292 - ERROR - Future exception was never retrieved
+future: <Future finished exception=UnboundLocalError("local variable 'departamentos' referenced before assignment")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1003, in mostrar_departamentos_seleccionados
+    print("1",departamentos)
+UnboundLocalError: local variable 'departamentos' referenced before assignment
+2024-11-29 12:42:20,248 - ERROR - Error en mostrar_departamentos_seleccionados: local variable 'departamentos' referenced before assignment
+2024-11-29 12:44:16,723 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:44:16,724 - ERROR - Error en mostrar_departamentos_seleccionados: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:47:05,509 - ERROR - Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:47:05,511 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError('Error al ejecutar la consulta: (\'22018\', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value \'[(1,)]\' to data type int. (245) (SQLExecDirectW)")')>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.DataError: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1456, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1413, in iniciar_sesion
+    obtener_departamentos(username)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1374, in obtener_departamentos
+    res=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO=?",id)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:47:20,643 - ERROR - Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:47:20,644 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError('Error al ejecutar la consulta: (\'22018\', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value \'[(1,)]\' to data type int. (245) (SQLExecDirectW)")')>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.DataError: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1456, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1413, in iniciar_sesion
+    obtener_departamentos(username)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1374, in obtener_departamentos
+    res=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO=?",id)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:49:05,264 - ERROR - Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:49:05,266 - ERROR - Future exception was never retrieved
+future: <Future finished exception=RuntimeError('Error al ejecutar la consulta: (\'22018\', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value \'[(1,)]\' to data type int. (245) (SQLExecDirectW)")')>
+Traceback (most recent call last):
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 691, in ejecutar_consulta
+    self.cursor.execute(query, parametros or ())
+pyodbc.DataError: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1456, in <lambda>
+    ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1413, in iniciar_sesion
+    obtener_departamentos(username)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1373, in obtener_departamentos
+    res=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO=?",id)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 703, in ejecutar_consulta
+    raise RuntimeError(f"Error al ejecutar la consulta: {e}")
+RuntimeError: Error al ejecutar la consulta: ('22018', "[22018] [Microsoft][ODBC SQL Server Driver][SQL Server]Conversion failed when converting the nvarchar value '[(1,)]' to data type int. (245) (SQLExecDirectW)")
+2024-11-29 12:52:48,130 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:52:48,131 - ERROR - Error en mostrar_departamentos_seleccionados: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:55:53,505 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:55:53,506 - ERROR - Error en mostrar_departamentos_seleccionados: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:58:23,941 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 12:58:23,942 - ERROR - Error en mostrar_departamentos_seleccionados: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 13:03:25,419 - ERROR - Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 13:03:25,420 - ERROR - Error en mostrar_departamentos_seleccionados: Error al ejecutar la consulta: ('07002', '[07002] [Microsoft][ODBC SQL Server Driver]Campo COUNT erróneo o error de sintaxis (0) (SQLExecDirectW)')
+2024-11-29 13:09:40,088 - ERROR - Error en mostrar_departamentos_seleccionados: obtener_departamentos() missing 1 required positional argument: 'usern'
+2024-11-29 13:49:51,843 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:49:54,148 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:50:27,947 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:50:29,044 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:50:29,637 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:50:30,099 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('Aprovecheck() takes 1 positional argument but 2 were given')>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: Aprovecheck() takes 1 positional argument but 2 were given
+2024-11-29 13:54:22,624 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    self.valid[self.control.key[1],self.control.key[0]]=self.control.value
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:54:24,623 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    self.valid[self.control.key[1],self.control.key[0]]=self.control.value
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:56:05,615 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    print(self.control.value,self.control.key[1],self.control.key[0])
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:56:07,311 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    print(self.control.value,self.control.key[1],self.control.key[0])
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:57:46,209 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    print(self.control.key[1],self.control.key[0])
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:57:47,524 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    print(self.control.key[1],self.control.key[0])
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 13:59:56,922 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'AnimatedApp' object has no attribute 'control'")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 1332, in Aprovecheck
+    print(self.control.key[1],self.control.key[0])
+AttributeError: 'AnimatedApp' object has no attribute 'control'
+2024-11-29 14:02:28,304 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("'NoneType' object is not subscriptable")>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 754, in <lambda>
+    on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 970, in añadir_todos
+    [(print(empleado),agregar_dato(
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 974, in <listcomp>
+    self.valid[e.control.key[1],e.control.key[0]],
+TypeError: 'NoneType' object is not subscriptable
+2024-11-29 14:05:22,753 - ERROR - Future exception was never retrieved
+future: <Future finished exception=KeyError(('0014', '0014'))>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 754, in <lambda>
+    on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 970, in añadir_todos
+    [(print(empleado),agregar_dato(
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 974, in <listcomp>
+    self.valid[empleado[1][0],empleado[1][0]],
+KeyError: ('0014', '0014')
+2024-11-29 14:06:36,728 - ERROR - Future exception was never retrieved
+future: <Future finished exception=KeyError(('0014', '0014'))>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 754, in <lambda>
+    on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 970, in añadir_todos
+    [agregar_dato(
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 974, in <listcomp>
+    self.valid[empleado[1][0],empleado[1][0]],
+KeyError: ('0014', '0014')
+2024-11-29 14:07:30,227 - ERROR - Future exception was never retrieved
+future: <Future finished exception=KeyError(('0014', '0014'))>
+Traceback (most recent call last):
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\concurrent\futures\thread.py", line 52, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 754, in <lambda>
+    on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 970, in añadir_todos
+    [agregar_dato(
+  File "c:\Users\usuario\Downloads\Nomina\Login.py", line 974, in <listcomp>
+    self.valid[empleado[1][0],empleado[1][0]],
+KeyError: ('0014', '0014')
+2024-11-29 14:08:54,947 - ERROR - Error en mostrar_departamentos_seleccionados: ('0014', '0014')
