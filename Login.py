@@ -22,7 +22,7 @@ from flet import (
     FilledButton,
     SnackBar
 )
-import requests
+import sys
 import pyodbc
 import socket
 import base64
@@ -51,7 +51,7 @@ class Variables:
         self.dias_festivos=[date(self.year,1,1),date(self.year,5,1),date(self.year,9,16),date(self.year,12,25)]
         self.dias_semana={0:"LUNES",1:"MARTES",2:"MIERCOLES",3:"JUEVES",4:"VIERNES",5:"SABADO",6:"DOMINGO",}
         self.excel_file =  os.path.dirname(__file__)+"\\Formatollenado.xlsx"
-        self.pdf_file =  os.path.dirname(__file__)+"\\output.pdf"
+        self.pdf_file =  os.path.dirname(sys.executable)+"\\output.pdf"
         self.HE_entries={}
         self.DT_entries={}
         self.TE_entries={}
@@ -96,19 +96,16 @@ def calcular_fechas():
     return dias_festivos
 def check_dias(dia,codigoempleado,periodo):
     try:
-        # Conectar a la base de datos
         db = ConexionBD(host, database="datos")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        print(dia,codigoempleado,periodo)
         resultado = db.ejecutar_consulta("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",(codigoempleado,dia,periodo))
         x=resultado.count(resultado)
-        print(x)
         if resultado == None or x==0:
-            print("entro")
             db.cerrar()
             if dia == "SABADO" or dia=="DOMINGO":
-                return False
+                if "/" not in str(resultado):
+                    return False
             return True
         elif "/" not in str(resultado):
             db.cerrar()
@@ -465,16 +462,16 @@ def excel_add(id,depar,tipo,periodo):
         adjusted_width = (max_length + 2)  # Ajustar ligeramente
         sheet.column_dimensions[col_letter].width = adjusted_width
     # Guardar el archivo de Excel actualizado
-    workbook.save(ruta+"\\Formatollenado.xlsx")
+    workbook.save(os.path.dirname(sys.executable)+"\\Formatollenado.xlsx")
     periodo=periodo.replace(" ", "_")
     periodo=periodo.replace("/", "-")
     # Convertir a PDF usando pandas y matplotlib
     ruta_excel = ruta+"\\Formatollenado.xlsx"
-    pdf_output = ruta+"\\Reporte_"+periodo
+    pdf_output = os.path.dirname(sys.executable)+"\\Reporte_"+periodo
     excel_to_pdf(ruta_excel, pdf_output,tipo)   
 def excel_to_pdf(excel_file, pdf_file,tipo):
     # Initialize Excel application (headless)
-    ruta= os.path.dirname(__file__)
+    ruta= os.path.dirname(sys.executable)
     excel = win32.gencache.EnsureDispatch("Excel.Application")
     excel.Visible = False  # Keep Excel hidden
     # Open the workbook
@@ -497,7 +494,7 @@ def excel_to_pdf(excel_file, pdf_file,tipo):
                 )
             )
     # Set file paths and passwords
-    original_pdf = ruta+"\\output\\output.pdf"
+    original_pdf = pdf_file+".pdf"
     if tipo=="Sindicato":
         encrypted_pdf = "protected_document.pdf"
     else:
@@ -535,15 +532,19 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
     dias_festivos=calcular_fechas()
     db = ConexionBD(host, database="datos")
     global buttonClicked
+    print(dias)
     print(periodo)
     print(codigoEmpleado)
     if nomina=="2":
         for i, ((dia,index), var) in enumerate(dias.items()):
             print(dia,index)
-            fechas_seleccionadas[dia,i,codigoEmpleado]=almacenar_fecha(i, var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
+            if str(codigoEmpleado) in index:
+                fechas_seleccionadas[dia,str(index[1]).strip(),codigoEmpleado]=almacenar_fecha(index[1], var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
     else:
         for i, ((dia,index), var) in enumerate(dias.items()):
-            fechas_seleccionadas[dia,i,codigoEmpleado]=almacenar_fecha(i, var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
+            print(index,codigoEmpleado)
+            if str(codigoEmpleado) in index:
+                fechas_seleccionadas[dia,str(index[1]).strip(),codigoEmpleado]=almacenar_fecha(index[1], var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
     print(fechas_seleccionadas)
     try:
         # Conectar a la base de datos
@@ -553,33 +554,34 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         if "0" in str(resultado):
             # Si no existe, insertar un nuevo registro
             for i, ((dia,index), var) in enumerate(dias.items()):
-                    key=(codigoEmpleado,i)
-                    # Iterar sobre los días festivos
-                    for dia_festivo in dias_festivos:
-                        print(str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
-                        if str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
-                            DF = "1"  
-                    if dia in str(descanso) and var:
-                        DT[i]="1"
-                    db.ejecutar_consulta(
-                        """
-                        INSERT INTO Datos1 
-                        (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            codigoEmpleado,
-                            nomina,           # Tipo de cobro
-                            dia,                   # Día de la semana
-                            str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)),  # Asistencia del día
-                            HE.get((key), "0"),         # Horas extra del día i
-                            DF,                    # Días festivos (DF) es fijo
-                            TE.get((key), "0"),         # Turnos extras del día i
-                            DT.get((key), "0"),         # Descansos trabajados del día i
-                            periodo,               # Periodo actual
-                            aprovacion             # Aprobación
-                        ),commit=True
-                    )    
+                    if str(codigoEmpleado) in index:
+                        key=(codigoEmpleado,index[1])
+                        # Iterar sobre los días festivos
+                        for dia_festivo in dias_festivos:
+                            print(str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
+                            if str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
+                                DF = "1"  
+                        if dia in str(descanso) and var:
+                            DT[index[1]]="1"
+                        db.ejecutar_consulta(
+                            """
+                            INSERT INTO Datos1 
+                            (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                codigoEmpleado,
+                                nomina,           # Tipo de cobro
+                                dia,                   # Día de la semana
+                                str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),  # Asistencia del día
+                                HE.get((key), "0"),         # Horas extra del día i
+                                DF,                    # Días festivos (DF) es fijo
+                                TE.get((key), "0"),         # Turnos extras del día i
+                                DT.get((key), "0"),         # Descansos trabajados del día i
+                                periodo,               # Periodo actual
+                                aprovacion             # Aprobación
+                            ),commit=True
+                        )    
             db.commit()
             if multireg==True and buttonClicked==True:
                 print("Éxito", "Multiples Datos añadidos correctamente.")
@@ -589,33 +591,34 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         else:
             # Si ya existe, realizar un update
             for i, ((dia,index), var) in enumerate(dias.items()):
-                    key=(codigoEmpleado,i)
-                    # Iterar sobre los días festivos
-                    for dia_festivo in dias_festivos:
-                        print(str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
-                        if str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
-                            DF = "1"  
-                    if dia in str(descanso) and var:
-                        DT[i]="1"
-                    db.ejecutar_consulta(
-                        """
-                        UPDATE Datos1 SET 
-                        Dia_Asistencia = ?,
-                        Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
-                        WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
-                        """,
-                        (
-                            str(fechas_seleccionadas.get((dia,i,codigoEmpleado), 0)),  # Asistencia del día
-                            HE.get((key), "0"),         # Horas extra del día i
-                            DF,                    # Días festivos (DF) es fijo
-                            TE.get((key), "0"),         # Turnos extras del día i
-                            DT.get((key), "0"),         # Descansos trabajados del día i
-                            aprovacion,            # Aprobación
-                            codigoEmpleado,        # Código del empleado
-                            dia,                   # Día de la semana
-                            periodo                # Periodo actual
-                        ),commit=True
-                    )    
+                    if str(codigoEmpleado) in index:
+                        key=(codigoEmpleado,index[1])
+                        # Iterar sobre los días festivos
+                        for dia_festivo in dias_festivos:
+                            print(str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
+                            if str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
+                                DF = "1"  
+                        if dia in str(descanso) and var:
+                            DT[index[1]]="1"
+                        db.ejecutar_consulta(
+                            """
+                            UPDATE Datos1 SET 
+                            Dia_Asistencia = ?,
+                            Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
+                            WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
+                            """,
+                            (
+                                str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),  # Asistencia del día
+                                HE.get((key), "0"),         # Horas extra del día i
+                                DF,                    # Días festivos (DF) es fijo
+                                TE.get((key), "0"),         # Turnos extras del día i
+                                DT.get((key), "0"),         # Descansos trabajados del día i
+                                aprovacion,            # Aprobación
+                                codigoEmpleado,        # Código del empleado
+                                dia,                   # Día de la semana
+                                periodo                # Periodo actual
+                            ),commit=True
+                        )    
             db.commit()
             if multireg==True and buttonClicked==True:
                 print("Éxito", "Multiples Datos añadidos correctamente.")
@@ -627,16 +630,20 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
         print("Error", f"No se pudo añadir o actualizar el dato: {e}")
 # Specify the Excel and PDF file paths
 class ConexionBD:
-    def __init__(self, host, database, driver="SQL Server"):
+    def __init__(self, host, database, user, password, driver="SQL Server"):
         """
         Inicializa una conexión con la base de datos.
 
         :host: Nombre del host o dirección del servidor.
         :database: Nombre de la base de datos.
+        :user: Usuario de la base de datos.
+        :password: Contraseña del usuario.
         :driver: Controlador ODBC (por defecto SQL Server).
         """
         self.host = host
         self.database = database
+        self.user = user
+        self.password = password
         self.driver = driver
         self.conexion = None
         self.cursor = None
@@ -648,13 +655,15 @@ class ConexionBD:
         try:
             self.conexion = pyodbc.connect(
                 f"DRIVER={{{self.driver}}};"
-                f"SERVER={self.host}\\SQLEXPRESS;"
+                f"SERVER={self.host};"
                 f"DATABASE={self.database};"
-                "Trusted_Connection=yes;"
+                f"UID={self.user};"  # Usuario
+                f"PWD={self.password};"  # Contraseña
             )
             self.cursor = self.conexion.cursor()
         except Exception as e:
             raise ConnectionError(f"Error al conectar con la base de datos {self.database}: {e}")
+
 
     def ejecutar_consulta(self, query, parametros=None,commit=False):
         """
@@ -702,8 +711,11 @@ class AnimatedApp(ft.UserControl):
          # Crear el Dropdown de departamentos vacío inicialmente
         var=Variables()
         periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries=var.obtener_todos()
+        self.HE_entries=HE_entries
+        self.TE_entries=TE_entries
+        self.DT_entries=DT_entries
         self.periodos=periodos
-        self.asis=asis
+        self.asis={}
         self.dropdown_departamentos = ft.Dropdown(
             width=150,
             height=40,
@@ -723,7 +735,7 @@ class AnimatedApp(ft.UserControl):
             text="Añadir Todos",
             bgcolor=ft.colors.BLUE_800,
             color=ft.colors.WHITE,
-            on_click=self.enviar_todos(HE_entries)  # Cambiamos el evento a una nueva función
+            on_click=lambda e: self.añadir_todos(e,self.asis,self.HE_entries,self.DT_entries,self.TE_entries)  # Cambiamos el evento a una nueva función
         )
         # Crear el diálogo modal para mostrar los departamentos
         self.dialog_departamentos = ft.AlertDialog(
@@ -866,7 +878,8 @@ class AnimatedApp(ft.UserControl):
                                         on_click=lambda e:self.send_data(tipo_d,tipo_e,self.periodos)  # Función que manejará el evento del botón
                                     )
                                 ),
-                                self.add_project_button  
+                                self.add_project_button,
+                                self.add_enviar_todos  
                             ],scroll=ft.ScrollMode.ALWAYS,
                             spacing=10
                         )
@@ -894,6 +907,7 @@ class AnimatedApp(ft.UserControl):
             hint_text="Buscar Proyecto...",
             on_change=self.filtrar_departamentos
         )
+        
         self.dropdown_usuarios=ft.Dropdown(
             width=150,
             height=40,
@@ -927,27 +941,33 @@ class AnimatedApp(ft.UserControl):
                 self.show_selected_button
             ]
         )
-    def añadir_todos():
+    def añadir_todos(self,e,asis,HE_entries,DT_entries,TE_entries):
         todos={}
         periodos=""
         global multireg
         multireg=False
-        for i,emp_id in enumerate(todos):
-            if i==len(todos)-1:
-                multireg=True
-            agregar_dato(
-                todos[emp_id]['dias'],
-                todos[emp_id]['comentario'],
-                periodos,
-                todos[emp_id]['aprobar'].get(),
-                emp_id,
-                todos[emp_id]['entries_HE'],
-                todos[emp_id]['df'].get(),
-                todos[emp_id]['entries_DT'],
-                todos[emp_id]['entries_TE'],
-                todos[emp_id]['descanso'],
-                todos[emp_id]['nomina']
-            )
+        tipo_dep = self.dropdown_departamentos.value
+        tipo_empleado = self.dropdown_tipo_empleado.value
+        empleados=obtener_empleados(tipo_dep,tipo_empleado)
+        periodos=self.tipo_empleado_cambiado()
+        print(periodos,empleados)
+        [(print(empleado),agregar_dato(
+                                                            {dia: var for dia, var in asis.items()},
+                                                            "",
+                                                            periodos,
+                                                            True,
+                                                            empleado[1][0],
+                                                            HE_entries,
+                                                            "",
+                                                            DT_entries,
+                                                            TE_entries,
+                                                            "Domingo",
+                                                            empleado[1][1]
+                                                        ))for empleado in enumerate(empleados)]
+        alert=ft.AlertDialog(
+        title=ft.Text("Datos añadidos correctamente."),
+        )
+        self.page.open(alert)
     # Función para abrir el diálogo de departamentos
     def abrir_ventana_departamentos(self, e):
         # Agregar el diálogo a la lista de overlays y abrirlo
@@ -976,7 +996,6 @@ class AnimatedApp(ft.UserControl):
     def llenar_departamentos(self):
         # Crear las opciones para el Dropdown de departamentos
         opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
-
         # Asignar las opciones generadas al Dropdown de departamentos
         self.dropdown_departamentos.options = opciones_departamentos
     def datos(self,e,asis,HE_entries,DT_entries,TE_entries):
@@ -987,7 +1006,7 @@ class AnimatedApp(ft.UserControl):
         periodos=self.tipo_empleado_cambiado()
         print(periodos)
         [agregar_dato(
-                                                            {dia: var for dia, var in asis.items()},
+                                                            {dia: var for dia, var in self.asis.items()},
                                                             "",
                                                             periodos,
                                                             True,
@@ -999,6 +1018,10 @@ class AnimatedApp(ft.UserControl):
                                                             "Domingo",
                                                             e.control.key[1]
                                                         )]
+        alert=ft.AlertDialog(
+        title=ft.Text("Datos añadidos correctamente."),
+        )
+        self.page.open(alert)
     def cambio_departamentos(self,periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries, e=None):
         var=Variables()
         dias_semana,semana=var.obtener_semana()
@@ -1006,17 +1029,17 @@ class AnimatedApp(ft.UserControl):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             HE_entries[self.control.key]=self.control.value
-            print(HE_entries)
+            self.HE_entries[self.control.key]=self.control.value
         def updateDT(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             DT_entries[self.control.key]=self.control.value
-            print(DT_entries)
+            self.DT_entries[self.control.key]=self.control.value
         def updateTE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
             print(self.control.key)
             TE_entries[self.control.key]=self.control.value
-            print(TE_entries)
+            self.TE_entries[self.control.key]=self.control.value
         # Crear las opciones para el Dropdown de departamentos
         tipo_dep = self.dropdown_departamentos.value
         tipo_empleado = self.dropdown_tipo_empleado.value
@@ -1131,6 +1154,7 @@ class AnimatedApp(ft.UserControl):
                     self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
         self.white_container.content=ft.Text(self.periodos, color=ft.colors.BLACK)
+        print("ASD",self.asis)
         self.update()
     def cambio_departamentos_search(self, e,periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries):
         var=Variables()
@@ -1208,7 +1232,7 @@ class AnimatedApp(ft.UserControl):
             for index,_ in enumerate(empleados):
                 for __ in range(7):
                     e=check_dias(semana[__],_[0],self.periodos)
-                    self.asis_changed((str(_[0]),__),x,dias_semana,_[1])
+                    self.asis_changed((str(_[0]),__),x,dias_semana,_[1])   
         else:
             diasq=obtener_quincenas()
             dias=sortdias(diasq)
@@ -1263,24 +1287,21 @@ class AnimatedApp(ft.UserControl):
             for index,_ in enumerate(empleados):
                 for i,(dia,var) in enumerate(dias.items()):
                     x=check_dias(dias_semana[diasq[i]],_[0],self.periodos)
-                    self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])
-            print("ASD",self.asis)
+                    self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])        
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
+        print("ASD",self.asis) 
         self.update()
     def checkbox_changed(e,x,asist,dias_semana,nomina):
-        print("x2",dias_semana[x.control.key[1]],(x.control.key[0],x.control.key[1]))
-        print(x.control.value)
         if nomina=="1":
             e.asis[dias_semana[x.control.key[1]],(x.control.key[0],x.control.key[1])]=int(x.control.value)
         else:
             e.asis[x.control.key[1],x.control.key[0]]=int(x.control.value)
-        print(e.asis)
     def asis_changed(e,x,asist,dias_semana,nomina):
-        print("x1",x[1],x[0])
-        print(asist)
         if nomina=="1":
+            print(x[0])
             e.asis[x[1],x[0]]=int(asist)
         else:
+            print(x[0])
             e.asis[x[1],x[0]]=int(asist)
     def tipo_empleado_cambiado(self, e=None):
         # Obtiene el valor seleccionado en el primer Dropdown
@@ -1427,7 +1448,6 @@ def main(page: ft.Page):
                         username,
                         password,
                         ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
-                        # ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/home")),
                     ],
                 )
             )
