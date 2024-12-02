@@ -104,10 +104,10 @@ def calcular_fechas():
     return dias_festivos
 def check_dias(dia,codigoempleado,periodo):
     try:
-        db = ConexionBD(host, database="datos",user="",password="")
+        db = ConexionBD(host="148.200.128.13", database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        resultado = db.ejecutar_consulta("SELECT Dia_Asistencia FROM Datos1 Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",(codigoempleado,dia,periodo))
+        resultado = db.ejecutar_consulta("SELECT Dia_Asistencia FROM Prenomina Where Codigo_Empleado=? AND Dia_Semana=? AND Periodo=?",(codigoempleado,dia,periodo))
         x=resultado.count(resultado)
         if resultado == None or x==0:
             db.cerrar()
@@ -122,8 +122,17 @@ def check_dias(dia,codigoempleado,periodo):
         return True
     except Exception as e:
         logging.error("Error", f"No se pudo Verificar: {e}")
+def obtener_ASIGNED_departamentos(id):
+    db = ConexionBD(host="148.200.128.13",database="JumapamSistemas",user="andres",password="Andr3s2024")
+    db.conectar()
+    resultados=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER Where ID_USUARIO=?",(id))
+    depars=[]
+    for i in resultados:
+        depars.append(str(i[0]))
+    db.cerrar()
+    return depars
 def obtener_ALL_departamentos():
-    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
+    db = ConexionBD(host="148.200.128.13",database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
     db.conectar()
     resultados=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM DEPARTAM")
     depars=[]
@@ -133,13 +142,12 @@ def obtener_ALL_departamentos():
     return depars
 def GET_USER():
     try:
-        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
+        db = ConexionBD(host="148.200.128.15",database="JumapamSistemas",user="andres",password="Andr3s2024")
         db.conectar()
         resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM HIS_SISTEMAS_PERMISOS WHERE ID_SISTEMA = 12")
         id=resultado
         iD=[]
         for ids in id:
-            print(ids)
             iD.append(str(ids[0]))
         db.cerrar()
         return iD
@@ -147,18 +155,28 @@ def GET_USER():
         logging.error("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
 def UPDATE_USER(id,clave):
     try:
-        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
+        db = ConexionBD(host="148.200.128.15",database="JumapamSistemas",user="andres",password="Andr3s2024")
+        db.conectar()
+        print(id,clave)
+        for clavedep in clave:
+            resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",(id,str(clavedep)))
+            if str(id) in resultado:
+                print("HI")
+            else:
+                print("works")
+                db.ejecutar_consulta("INSERT INTO HIS_SISTEMAS_DEPUSER VALUES(?,?)",(id,str(clavedep)),commit=True)
+        resultado2=db.ejecutar_consulta("SELECT NOMBRE_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE ID_USUARIO = ?",id)
+        db.cerrar()
+        return resultado2
+    except Exception as e:
+        logging.error("Error", f"Error al ejecutar el Proceso alamcenado: {e}")
+def DEL_USER(id,clave):
+    try:
+        db = ConexionBD(host="148.200.128.15",database="JumapamSistemas",user="andres",password="Andr3s2024")
         db.conectar()
         for clavedep in clave:
-            print(id,clavedep)
-            resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",(id,str(clavedep)))
-            if not resultado:
-                print("a")
-                db.ejecutar_consulta("INSERT INTO HIS_SISTEMAS_DEPUSER VALUES(?,?)",(id,str(clavedep)),commit=True)
-                print("out")
-            else:
-                print(resultado)
-            resultado2=db.ejecutar_consulta("SELECT NOMBRE_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE ID_USUARIO = ?",id)
+            db.ejecutar_consulta("DELETE FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO = ? AND CLAVE_DEPARTAMENTO=?",(id,str(clavedep)),commit=True)
+        resultado2=db.ejecutar_consulta("SELECT NOMBRE_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE ID_USUARIO = ?",id)
         db.cerrar()
         return resultado2
     except Exception as e:
@@ -176,7 +194,6 @@ def obtener_quincenas():
         fin = date(year, month, 15)
         for i in range(15):
             a.append((inicio+timedelta(i)).weekday())
-            print(a)
     else:
         # Segunda quincena (del 16 al último día del mes)
         inicio = date(year, month, 16)
@@ -200,9 +217,8 @@ def obtener_empleados(depar,tipo):
         tipoc=2
     else:
         tipoc=1
-    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
+    db = ConexionBD(host="148.200.128.13",database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
     db.conectar()
-    print(depar,tipoc)
     resultados=db.ejecutar_consulta("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=?",(depar,tipoc))
     db.cerrar()
     return resultados
@@ -211,9 +227,8 @@ def obtener_empleados_search(depar,tipo,ID):
         tipoc=2
     else:
         tipoc=1
-    db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
+    db = ConexionBD(host="148.200.128.13",database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
     db.conectar()
-    print(depar,tipoc)
     resultados=db.ejecutar_consulta("SELECT TRABAJAD.CLAVE_TRABAJADOR,CLAVE_TIPO_NOMINA, NOMBRE, PATERNO, MATERNO, DESCANSO1, DESCANSO2,CLAVE_DEPARTAMENTO FROM TRABAJAD INNER JOIN TRAHISDE ON TRAHISDE.CLAVE_TRABAJADOR=TRABAJAD.CLAVE_TRABAJADOR WHERE FECHA_F='2100-12-31' AND CLAVE_DEPARTAMENTO=? AND CLAVE_TIPO_NOMINA=? AND TRABAJAD.CLAVE_TRABAJADOR LIKE '%'+?",(depar,tipoc,ID))
     db.cerrar()
     if ID=="":
@@ -222,13 +237,13 @@ def obtener_empleados_search(depar,tipo,ID):
 def obtener_periodo(x):
     hoy=date.today()
     if x==1:
-        db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
+        db = ConexionBD(host="148.200.128.13",database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
         db.conectar()
         periodo =db.ejecutar_consulta("SELECT CLAVE_PERIODO, CLAVE_TIPO_NOMINA, DESCRIPCION FROM PERIODO WHERE CLAVE_TIPO_NOMINA=1 AND ? BETWEEN FECHA_I AND FECHA_F",str(hoy))
         db.cerrar()
         return periodo
     else:
-        db = ConexionBD(host,database="BdTrabajadTemporal",user="",password="")
+        db = ConexionBD(host="148.200.128.13",database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
         db.conectar()
         periodo =db.ejecutar_consulta("SELECT CLAVE_PERIODO, CLAVE_TIPO_NOMINA, DESCRIPCION FROM PERIODO WHERE CLAVE_TIPO_NOMINA=2 AND ? BETWEEN FECHA_I AND FECHA_F",str(hoy))
         db.cerrar()
@@ -266,7 +281,6 @@ def excel():
     hoy2=datetime.now()
     fechasQ = []
     dias=obtener_quincenas()
-    print(dias)
     # Calcular la fecha del día seleccionado
     for i,fec in enumerate(dias):
         if day <=15:
@@ -298,13 +312,12 @@ def excel():
 def verificar_asistencias(codigoEmpleado,periodo):
     try:
         # Conectar a la base de datos
-        db = ConexionBD(host, database="datos",user="",password="")
+        db = ConexionBD(host="148.200.128.13", database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        resultado = db.ejecutar_consulta("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Datos1 WHERE Codigo_Empleado=? AND Periodo=?",(codigoEmpleado,periodo))
+        resultado = db.ejecutar_consulta("SELECT Codigo_Empleado,Dia_Asistencia,Horas_Extra,Turnos_Extras,Descansos_Trabajados FROM Prenomina WHERE Codigo_Empleado=? AND Periodo=?",(codigoEmpleado,periodo))
         asistencia_modificada = []
         for fila in resultado:
-            print(fila[1])
             if fila[1] != "0": 
                 dia_asistencia = 1
             else:
@@ -317,7 +330,6 @@ def verificar_asistencias(codigoEmpleado,periodo):
 def excel_add(id,depar,tipo,periodo):
     # Cargar el archivo de Excel
     ruta= os.path.dirname(__file__)
-    print("Tipo:",tipo,periodo)
     if tipo=="Sindicato":
         ruta_excel =  os.path.dirname(__file__)+"\\Formato.xlsx"
     else:
@@ -341,7 +353,6 @@ def excel_add(id,depar,tipo,periodo):
         ap2=f"{empleado[4]}"
         ape2.append(ap2)
         x+=1
-    print(code)
     if tipo=="Sindicato":
         for i in range(4, x + 4):
             Dato = verificar_asistencias(code[(i - 4)],periodo)
@@ -386,7 +397,6 @@ def excel_add(id,depar,tipo,periodo):
                         sheet[col_letter + str(i)] = str(Dato[j])  # Asigna el valor
     else:
         for i in range(4, x + 4):
-            print(code[(i-4)])
             Dato = verificar_asistencias(code[(i - 4)],periodo)
             if sheet["A" + str(i)].value is None and Dato and len(Dato) > 0:
                 sheet["A" + str(i)] = str(Dato[0][0])  # Código de empleado
@@ -423,42 +433,42 @@ def excel_add(id,depar,tipo,periodo):
             sheet["AM" + str(i)] = str(Dato[6][2])  # Más datos
             sheet["AN" + str(i)] = str(Dato[6][3])  # Más datos
             sheet["AO" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["L" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["AP" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["AQ" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["AR" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["M" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["AS" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["AT" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["AU" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["N" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["AV" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["AW" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["AX" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["O" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["AY" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["AZ" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BA" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["P" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["BB" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["BC" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BD" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["Q" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["BE" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["BF" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BG" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["R" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["BH" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["BI" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BJ" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["S" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["BK" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["BL" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BM" + str(i)] = str(Dato[6][4])  # Más datos
-            sheet["T" + str(i)] = str(Dato[6][1])  # Más datos
-            sheet["BN" + str(i)] = str(Dato[6][2])  # Más datos
-            sheet["BO" + str(i)] = str(Dato[6][3])  # Más datos
-            sheet["BP" + str(i)] = str(Dato[6][4])  # Más datos
+            sheet["L" + str(i)] = str(Dato[7][1])  # Más datos
+            sheet["AP" + str(i)] = str(Dato[7][2])  # Más datos
+            sheet["AQ" + str(i)] = str(Dato[7][3])  # Más datos
+            sheet["AR" + str(i)] = str(Dato[7][4])  # Más datos
+            sheet["M" + str(i)] = str(Dato[8][1])  # Más datos
+            sheet["AS" + str(i)] = str(Dato[8][2])  # Más datos
+            sheet["AT" + str(i)] = str(Dato[8][3])  # Más datos
+            sheet["AU" + str(i)] = str(Dato[8][4])  # Más datos
+            sheet["N" + str(i)] = str(Dato[9][1])  # Más datos
+            sheet["AV" + str(i)] = str(Dato[9][2])  # Más datos
+            sheet["AW" + str(i)] = str(Dato[9][3])  # Más datos
+            sheet["AX" + str(i)] = str(Dato[9][4])  # Más datos
+            sheet["O" + str(i)] = str(Dato[10][1])  # Más datos
+            sheet["AY" + str(i)] = str(Dato[10][2])  # Más datos
+            sheet["AZ" + str(i)] = str(Dato[10][3])  # Más datos
+            sheet["BA" + str(i)] = str(Dato[10][4])  # Más datos
+            sheet["P" + str(i)] = str(Dato[11][1])  # Más datos
+            sheet["BB" + str(i)] = str(Dato[11][2])  # Más datos
+            sheet["BC" + str(i)] = str(Dato[11][3])  # Más datos
+            sheet["BD" + str(i)] = str(Dato[11][4])  # Más datos
+            sheet["Q" + str(i)] = str(Dato[12][1])  # Más datos
+            sheet["BE" + str(i)] = str(Dato[12][2])  # Más datos
+            sheet["BF" + str(i)] = str(Dato[12][3])  # Más datos
+            sheet["BG" + str(i)] = str(Dato[12][4])  # Más datos
+            sheet["R" + str(i)] = str(Dato[13][1])  # Más datos
+            sheet["BH" + str(i)] = str(Dato[13][2])  # Más datos
+            sheet["BI" + str(i)] = str(Dato[13][3])  # Más datos
+            sheet["BJ" + str(i)] = str(Dato[13][4])  # Más datos
+            sheet["S" + str(i)] = str(Dato[14][1])  # Más datos
+            sheet["BK" + str(i)] = str(Dato[14][2])  # Más datos
+            sheet["BL" + str(i)] = str(Dato[14][3])  # Más datos
+            sheet["BM" + str(i)] = str(Dato[14][4])  # Más datos
+            sheet["T" + str(i)] = str(Dato[15][1])  # Más datos
+            sheet["BN" + str(i)] = str(Dato[15][2])  # Más datos
+            sheet["BO" + str(i)] = str(Dato[15][3])  # Más datos
+            sheet["BP" + str(i)] = str(Dato[15][4])  # Más datos
             for j in range(1, 15):  # Ajusta según la cantidad de Dato
                     col_letter = chr(70 + j)  # Calcula la letra de la columna
                     if sheet[col_letter + str(i)].value is None and len(Dato) > j:
@@ -473,12 +483,12 @@ def excel_add(id,depar,tipo,periodo):
         adjusted_width = (max_length + 2)  # Ajustar ligeramente
         sheet.column_dimensions[col_letter].width = adjusted_width
     # Guardar el archivo de Excel actualizado
-    workbook.save(os.path.dirname(sys.executable)+"\\Formatollenado.xlsx")
+    workbook.save(ruta+"\\Formatollenado.xlsx")
     periodo=periodo.replace(" ", "_")
     periodo=periodo.replace("/", "-")
     # Convertir a PDF usando pandas y matplotlib
     ruta_excel = ruta+"\\Formatollenado.xlsx"
-    pdf_output = os.path.dirname(sys.executable)+"\\Reporte_"+periodo
+    pdf_output = ruta+"\\Reporte_"+periodo+"_proyecto_"+depar+".pdf"
     excel_to_pdf(ruta_excel, pdf_output,tipo)   
 def excel_to_pdf(excel_file, pdf_file,tipo):
     # Initialize Excel application (headless)
@@ -490,12 +500,12 @@ def excel_to_pdf(excel_file, pdf_file,tipo):
     # Save as PDF
     workbook.ExportAsFixedFormat(0, pdf_file)
     # Close the workbook and Excel application
-    workbook.Close(SaveChanges=False)
+    workbook.Close(SaveChanges=True)
     # Clean up resources
     del excel
     def encrypt_pdf(input_pdf, output_pdf, user_password, owner_password):
         # Encrypt the PDF using pikepdf
-        with pikepdf.open(input_pdf) as pdf:
+        with pikepdf.open(input_pdf,allow_overwriting_input=True) as pdf:
             pdf.save(
                 output_pdf,
                 encryption=pikepdf.Encryption(
@@ -505,11 +515,11 @@ def excel_to_pdf(excel_file, pdf_file,tipo):
                 )
             )
     # Set file paths and passwords
-    original_pdf = pdf_file+".pdf"
+    original_pdf = pdf_file
     if tipo=="Sindicato":
-        encrypted_pdf = "protected_document.pdf"
+        encrypted_pdf =pdf_file
     else:
-        encrypted_pdf = "protected_document_Quincenal.pdf"
+        encrypted_pdf =pdf_file
     user_password = "userpass123"
     owner_password = "ownerpass456"
     # Create the PDF and then encrypt it
@@ -531,37 +541,29 @@ def almacenar_fecha(dia_semana, var_checkbox, dia_texto, nomina,fechas_seleccion
     # Formatear la fecha como DD/MM/AAAA
     fecha_formateada = fecha.strftime('%d/%m/%Y')
     if var_checkbox==1 and codigo in str(index):
-        print("hi",fecha_formateada)
         # Si el checkbox está marcado, agregamos la fecha
         return fecha_formateada
     
 def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, TE, DT,descanso,nomina):
-    print("SDF")
     multireg=False
     vari=Variables()
     year,month,day,dias_festivos,fechas_seleccionadas,_=vari.obtener_fechas()
     dias_festivos=calcular_fechas()
-    db = ConexionBD(host, database="datos",user="",password="")
+    db = ConexionBD(host="148.200.128.13", database="BdTrabajadTemporal",user="andres",password="Andr3s2024")
     global buttonClicked
-    print(dias)
-    print(periodo)
-    print(codigoEmpleado)
     if nomina=="2":
         for i, ((dia,index), var) in enumerate(dias.items()):
-            print(dia,index)
             if str(codigoEmpleado) in index:
                 fechas_seleccionadas[dia,str(index[1]).strip(),codigoEmpleado]=almacenar_fecha(index[1], var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
     else:
         for i, ((dia,index), var) in enumerate(dias.items()):
-            print(index,codigoEmpleado)
             if str(codigoEmpleado) in index:
                 fechas_seleccionadas[dia,str(index[1]).strip(),codigoEmpleado]=almacenar_fecha(index[1], var, dia, nomina,fechas_seleccionadas,codigoEmpleado,index)  # Guarda las fechas seleccionadas
-    print(fechas_seleccionadas)
     try:
         # Conectar a la base de datos
         db.conectar()
         # Verificar si ya existe un registro con el mismo codigoEmpleado
-        resultado = db.ejecutar_consulta("SELECT COUNT(*) FROM Datos1 WHERE Codigo_Empleado = ? AND periodo= ?", (codigoEmpleado,periodo))
+        resultado = db.ejecutar_consulta("SELECT COUNT(*) FROM Prenomina WHERE Codigo_Empleado = ? AND periodo= ?", (codigoEmpleado,periodo))
         if "0" in str(resultado):
             # Si no existe, insertar un nuevo registro
             for i, ((dia,index), var) in enumerate(dias.items()):
@@ -569,14 +571,13 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         key=(codigoEmpleado,index[1])
                         # Iterar sobre los días festivos
                         for dia_festivo in dias_festivos:
-                            print(str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
                             if str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
                                 DF = "1"  
                         if dia in str(descanso) and var:
                             DT[index[1]]="1"
                         db.ejecutar_consulta(
                             """
-                            INSERT INTO Datos1 
+                            INSERT INTO Prenomina 
                             (Codigo_Empleado, TipoCobro, Dia_Semana, Dia_Asistencia, Horas_Extra, Dias_Festivos, Turnos_Extras, Descansos_Trabajados, Periodo, Aprobacion) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """,
@@ -595,10 +596,7 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )    
             db.commit()
             if multireg==True and buttonClicked==True:
-                print("Éxito", "Multiples Datos añadidos correctamente.")
                 buttonClicked=False
-            elif buttonClicked==False:
-                print("Éxito", "Datos añadidos correctamente.")
         else:
             # Si ya existe, realizar un update
             for i, ((dia,index), var) in enumerate(dias.items()):
@@ -606,14 +604,13 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         key=(codigoEmpleado,index[1])
                         # Iterar sobre los días festivos
                         for dia_festivo in dias_festivos:
-                            print(str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)),dia_festivo.strftime('%d/%m/%Y'))
                             if str(fechas_seleccionadas.get((dia,str(index[1]).strip(),codigoEmpleado), 0)) == dia_festivo.strftime('%d/%m/%Y'):
                                 DF = "1"  
                         if dia in str(descanso) and var:
                             DT[index[1]]="1"
                         db.ejecutar_consulta(
                             """
-                            UPDATE Datos1 SET 
+                            UPDATE Prenomina SET 
                             Dia_Asistencia = ?,
                             Horas_Extra = ?, Dias_Festivos = ?, Turnos_Extras = ?, Descansos_Trabajados = ?, Aprobacion = ?
                             WHERE Codigo_Empleado = ? AND Dia_Semana = ? AND Periodo = ?
@@ -632,16 +629,13 @@ def agregar_dato(dias, comentario, periodo, aprovacion, codigoEmpleado, HE, DF, 
                         )    
             db.commit()
             if multireg==True and buttonClicked==True:
-                print("Éxito", "Multiples Datos añadidos correctamente.")
                 buttonClicked=False
-            elif buttonClicked==False:
-                print("Éxito", "Datos actualizados correctamente.")
         db.cerrar()
     except Exception as e:
         logging.error("Error", f"No se pudo añadir o actualizar el dato: {e}")
 # Specify the Excel and PDF file paths
 class ConexionBD:
-    def __init__(self, host, database, user, password, driver="SQL Server"):
+    def __init__(self, host, database, user, password, driver="ODBC Driver 18 for SQL Server"):
         """
         Inicializa una conexión con la base de datos.
 
@@ -663,13 +657,15 @@ class ConexionBD:
         """
         Establece la conexión a la base de datos.
         """
+        
         try:
             self.conexion = pyodbc.connect(
                 f"DRIVER={{{self.driver}}};"
-                f"SERVER={self.host}\\SQLEXPRESS;"
+                f"SERVER=DESKTOP-BRTB1M8\SQLEXPRESS;"
                 f"DATABASE={self.database};"
                 f"UID={self.user};"  # Usuario
                 f"PWD={self.password};"  # Contraseña
+                f"TrustServerCertificate=YES;"
             )
             self.cursor = self.conexion.cursor()
         except Exception as e:
@@ -747,6 +743,12 @@ class AnimatedApp(ft.UserControl):
             color=ft.colors.WHITE,
             on_click=self.abrir_ventana_departamentos  # Cambiamos el evento a una nueva función
         )
+        self.sub_project_button = ft.ElevatedButton(
+            text="Eliminar Proyectos",
+            bgcolor=ft.colors.BLUE_800,
+            color=ft.colors.WHITE,
+            on_click=self.abrir_ventana_departamentos2  # Cambiamos el evento a una nueva función
+        )
         self.add_enviar_todos = ft.ElevatedButton(
             text="Añadir Todos",
             bgcolor=ft.colors.BLUE_800,
@@ -762,6 +764,17 @@ class AnimatedApp(ft.UserControl):
                 ft.ElevatedButton(
                     text="Cerrar",
                     on_click=lambda e: self.cerrar_ventana_departamentos()  # Llama a la función de cerrar
+                )
+            ]
+        )
+        self.dialog_departamentos2 = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Seleccione Departamentos"),
+            content=self.crear_contenido_dialogo2(),
+            actions=[
+                ft.ElevatedButton(
+                    text="Cerrar",
+                    on_click=lambda e: self.cerrar_ventana_departamentos2()  # Llama a la función de cerrar
                 )
             ]
         )
@@ -812,17 +825,6 @@ class AnimatedApp(ft.UserControl):
             alignment=ft.alignment.center,  # Alinear contenido al centro
             border_radius=5,
         )
-
-        # Botón de cerrar sesión
-        self.logout_button = ft.ElevatedButton(
-            text="Cerrar sesión",
-            bgcolor=ft.colors.RED_400,
-            color=ft.colors.WHITE,
-            width=140,
-            height=40,
-            on_click=self.logout  # Función para manejar el evento de clic
-        )
-
         # Contenedor con imagen, título y botón en una fila
         self.frame_title = ft.Container(
             expand=False,
@@ -835,13 +837,7 @@ class AnimatedApp(ft.UserControl):
                     self.image,
                     self.title_text,
                     self.spacing_container,  # Espacio antes del contenedor blanco
-                    self.white_container,
-                    ft.Container(
-                        content=self.logout_button,
-                        alignment=ft.alignment.center_right,
-                        expand=True,
-                        padding=ft.padding.only(top=5, right=10)  # Espacio en la parte superior y derecha
-                    )
+                    self.white_container
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER
             )
@@ -876,26 +872,27 @@ class AnimatedApp(ft.UserControl):
                                             ),
                                             ft.Text("Seleccione un Departamento:", size=20, color="BLACK"),  # Texto descriptivo
                                             self.dropdown_departamentos,
-                                            ft.TextField(hint_text="Buscar Empleado por Proyecto...",bgcolor="white",on_change=self.cambio_departamentos_search)
+                                            ft.TextField(hint_text="Buscar Empleado por Proyecto...",bgcolor="white",on_change=lambda e:self.cambio_departamentos_search(self.periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries,e))
                                         ]
                                     )
                                 ),
                                 # Tabla de ID, nombre, número y días
-                                self.contenedor_dias,
-                                self.contenedor_empleados,
-                                # Botón adicional debajo de la tabla
                                 ft.Container(
                                     alignment=ft.alignment.top_left,
                                     padding=ft.padding.only(top=20, left=10),
-                                    content=ft.ElevatedButton(
+                                    content=ft.Row(controls=[ft.ElevatedButton(
                                         text="Generar Reporte",
                                         bgcolor=ft.colors.BLUE_800,
                                         color=ft.colors.WHITE,
                                         on_click=lambda e:self.send_data(tipo_d,tipo_e,self.periodos)  # Función que manejará el evento del botón
-                                    )
-                                ),
+                                    ),
                                 self.add_project_button,
-                                self.add_enviar_todos  
+                                self.sub_project_button,
+                                self.add_enviar_todos])  
+                                ),
+                                self.contenedor_dias,
+                                self.contenedor_empleados,
+                                # Botón adicional debajo de la tabla
                             ],scroll=ft.ScrollMode.ALWAYS,
                             spacing=10
                         )
@@ -913,6 +910,57 @@ class AnimatedApp(ft.UserControl):
                 ]
             )
         ]
+    def depar(self, e):
+        # Obtener el usuario seleccionado
+        usuario_seleccionado = self.dropdown_usuarios2.value
+        # Obtener departamentos asignados
+        depars = obtener_ASIGNED_departamentos(usuario_seleccionado)
+        print(depars)
+        # Actualizar visibilidad de los checkboxes
+        for i, checkbox in enumerate(self.checkboxes_departamentos2):
+            if checkbox.label in depars:
+                checkbox.visible = True  # Mostrar si pertenece a los asignados
+            else:
+                checkbox.visible = False  # Ocultar si no pertenece
+        self.page.update()  # Actualizar la página para reflejar cambios
+    def crear_contenido_dialogo2(self):
+        # Lista de departamentos (puedes personalizar esta lista)
+        depars=[]
+        depars=obtener_ALL_departamentos()
+        # Crear un campo de búsqueda para filtrar departamentos
+        self.dropdown_usuarios2=ft.Dropdown(
+            width=150,
+            height=40,
+            bgcolor=ft.colors.GREY_300,
+            color=ft.colors.BLACK,
+            hint_text="Seleccione...",
+            padding=ft.padding.only(left=10, right=10),
+            on_change=self.depar
+        )
+        usuarios=GET_USER()
+        opciones_usuarios = [ft.dropdown.Option(user) for user in usuarios]
+        self.dropdown_usuarios2.options=opciones_usuarios
+        # Crear checkboxes para cada departamento
+        self.checkboxes_departamentos2 = [
+            ft.Checkbox(label=departamento) for departamento in depars
+        ]
+        checkbox_container = ft.Container(
+            content=ft.Column(controls=self.checkboxes_departamentos2, spacing=5,height=300,scroll="auto")
+        )
+        # Botón para mostrar los departamentos seleccionados
+        self.show_selected_button2 = ft.ElevatedButton(
+            text="Añadir Proyectos",
+            on_click=self.mostrar_departamentos_seleccionados2
+        )
+
+        # Retornar el contenido del diálogo en un contenedor Column
+        return ft.Column(
+            controls=[
+                self.dropdown_usuarios2,
+                checkbox_container,
+                self.show_selected_button2
+            ]
+        )
     def crear_contenido_dialogo(self):
         # Lista de departamentos (puedes personalizar esta lista)
         depars=[]
@@ -967,7 +1015,6 @@ class AnimatedApp(ft.UserControl):
             tipo_empleado = self.dropdown_tipo_empleado.value
             empleados=obtener_empleados(tipo_dep,tipo_empleado)
             periodos=self.tipo_empleado_cambiado()
-            print(periodos,empleados)
             [agregar_dato(
                                                                 {dia: var for dia, var in asis.items()},
                                                                 "",
@@ -983,17 +1030,20 @@ class AnimatedApp(ft.UserControl):
                                                             )for empleado in enumerate(empleados)]
         except Exception as e:
             logging.error(f"Error en mostrar_departamentos_seleccionados: {e}")
-            print(f"Error en mostrar_departamentos_seleccionados: {e}")
     # Función para abrir el diálogo de departamentos
+    def abrir_ventana_departamentos2(self, e):
+        # Agregar el diálogo a la lista de overlays y abrirlo
+        self.page.overlay.append(self.dialog_departamentos2)
+        self.dialog_departamentos2.open = True
+        self.page.update()
     def abrir_ventana_departamentos(self, e):
         # Agregar el diálogo a la lista de overlays y abrirlo
         self.page.overlay.append(self.dialog_departamentos)
         self.dialog_departamentos.open = True
         self.page.update()
-    def enviar_todos(self, HE_entries):
-        # Agregar el diálogo a la lista de overlays y abrirlo
-        print(HE_entries.values)
-    # Función para cerrar el diálogo de departamentos
+    def cerrar_ventana_departamentos2(self):
+        self.dialog_departamentos2.open = False
+        self.page.update()
     def cerrar_ventana_departamentos(self):
         self.dialog_departamentos.open = False
         self.page.update()
@@ -1006,24 +1056,19 @@ class AnimatedApp(ft.UserControl):
         self.page.update()
 
     # Función para mostrar los departamentos seleccionados
-    def mostrar_departamentos_seleccionados(self, e):
+    def mostrar_departamentos_seleccionados2(self, e):
         try:
-            print(self.dropdown_usuarios.value)
-            if self.dropdown_usuarios.value != "":
-                seleccionados = [checkbox.label for checkbox in self.checkboxes_departamentos if checkbox.value]
-                x=self.dropdown_usuarios.value
-                usuario=UPDATE_USER(x,seleccionados)
+            if self.dropdown_usuarios2.value != "":
+                seleccionados = [checkbox.label for checkbox in self.checkboxes_departamentos2 if checkbox.value]
+                x=self.dropdown_usuarios2.value
+                usuario=DEL_USER(x,seleccionados)
                 departamentos.clear()
-                print("usuario:",usuario[0])
                 obtener_departamentos(usuario[0])
                 opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
                 # Asignar las opciones generadas al Dropdown de departamentos
                 self.dropdown_departamentos.options = opciones_departamentos
                 self.update()
-                alert=ft.AlertDialog(
-                title=ft.Text("Proyectos Añadidos."),
-                )
-                self.page.open(alert)
+                self.cerrar_ventana_departamentos2()
             else:
                 alert=ft.AlertDialog(
                 title=ft.Text("Usuario no Seleccionado."),
@@ -1031,19 +1076,36 @@ class AnimatedApp(ft.UserControl):
                 self.page.open(alert)
         except Exception as e:
             logging.error(f"Error en mostrar_departamentos_seleccionados: {e}")
-            print(f"Error en mostrar_departamentos_seleccionados: {e}")
+    def mostrar_departamentos_seleccionados(self, e):
+        try:
+            if self.dropdown_usuarios.value != "":
+                seleccionados = [checkbox.label for checkbox in self.checkboxes_departamentos if checkbox.value]
+                x=self.dropdown_usuarios.value
+                usuario=UPDATE_USER(x,seleccionados)
+                departamentos.clear()
+                obtener_departamentos(usuario[0])
+                opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
+                # Asignar las opciones generadas al Dropdown de departamentos
+                self.dropdown_departamentos.options = opciones_departamentos
+                self.update()
+                self.cerrar_ventana_departamentos()
+            else:
+                alert=ft.AlertDialog(
+                title=ft.Text("Usuario no Seleccionado."),
+                )
+                self.page.open(alert)
+        except Exception as e:
+            logging.error(f"Error en mostrar_departamentos_seleccionados: {e}")
     def llenar_departamentos(self):
         # Crear las opciones para el Dropdown de departamentos
         opciones_departamentos = [ft.dropdown.Option(depto) for depto in departamentos]
         # Asignar las opciones generadas al Dropdown de departamentos
         self.dropdown_departamentos.options = opciones_departamentos
     def datos(self,e,asis,HE_entries,DT_entries,TE_entries):
-        print("Hi")
         tipo_dep = self.dropdown_departamentos.value
         tipo_empleado = self.dropdown_tipo_empleado.value
         empleados=obtener_empleados(tipo_dep,tipo_empleado)
         periodos=self.tipo_empleado_cambiado()
-        print(periodos)
         [agregar_dato(
                                                             {dia: var for dia, var in self.asis.items()},
                                                             "",
@@ -1066,17 +1128,14 @@ class AnimatedApp(ft.UserControl):
         dias_semana,semana=var.obtener_semana()
         def updateHE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             HE_entries[self.control.key]=self.control.value
             self.HE_entries[self.control.key]=self.control.value
         def updateDT(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             DT_entries[self.control.key]=self.control.value
             self.DT_entries[self.control.key]=self.control.value
         def updateTE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             TE_entries[self.control.key]=self.control.value
             self.TE_entries[self.control.key]=self.control.value
         # Crear las opciones para el Dropdown de departamentos
@@ -1093,43 +1152,39 @@ class AnimatedApp(ft.UserControl):
                                                     ft.Row(
                                                 spacing=10,
                                                 controls=[
-                                                    ft.Container(content=ft.Text("ID", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Nombre", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  padding=ft.padding.only(left=20,right=60, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Proyecto", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    *[ft.Text(value=semana[i], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK) for i in range(7) if tipo_empleado == "Sindicato"],
-                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+                                                    ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                                    ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=200),
+                                                    ft.Text("Proyecto", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                                    *[ft.Text(value=semana[i], size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=90) for i in range(7) if tipo_empleado == "Sindicato"],
+                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center",width=70),
                                                 ],
-                                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                                                alignment=ft.MainAxisAlignment.START
                                             ),
                                             *[ft.Row(
                                                         controls=[
-                                                            ft.Container(content=ft.Text(f"{_[0]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[2]}  {_[3]}", size=12, color=ft.colors.BLACK,),padding=ft.padding.only(left=20,right=60, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[7]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
+                                                            ft.TextField(value=f"{_[0]}",  height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                                            ft.TextField(value=f"{_[2]}  {_[3]}", height=60, width=200, bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", color="black", text_align="center"),
+                                                            ft.TextField(value=f"{_[7]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
                                                             *[ft.Column(
                                                             controls=[
                                                                 ft.Row(
                                                                     controls=[
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
-                                                                        ft.Checkbox(key=(str(_[0]),__),value=check_dias(semana[__],_[0],self.periodos),height=30, width=35, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,asis,dias_semana,_[1])),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
+                                                                        ft.Checkbox(key=(str(_[0]),__),value=check_dias(semana[__],_[0],self.periodos),height=30, width=40, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,asis,dias_semana,_[1])),
                                                                     ],
-                                                                    spacing=0
                                                                 ),
                                                                 ft.Row(
                                                                     controls=[
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
                                                                     ],
-                                                                    spacing=0
                                                                 ),
                                                             ]
                                                         ) for __ in range(7)],  # Checkbox para cada día
-                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
-                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e: self.datos(e,asis,HE_entries,DT_entries,TE_entries))
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,width=70,on_change=self.Aprovecheck),
+                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",icon=ft.icons.ADD, width=60, height=50, bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE,on_click=lambda e: self.datos(e,asis,HE_entries,DT_entries,TE_entries))
                                                         ],
-                                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                                                     )for index,_ in enumerate(empleados)],
-                                            
                                         ],
                                     )
                                                 )]
@@ -1141,53 +1196,75 @@ class AnimatedApp(ft.UserControl):
         else:
             diasq=obtener_quincenas()
             dias=sortdias(diasq)
-            print(diasq)
-            filas_empleados=[ft.Container(
-                                    bgcolor=ft.colors.BLUE_600,  # Fondo azul claro para la fila
-                                    padding=ft.padding.only(top=20),
-                                    content=ft.Column(
-                                        controls=[
-                                                    ft.Row(
-                                                spacing=10,
-                                                controls=[
-                                                    ft.Container(content=ft.Text("ID", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Nombre", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  padding=ft.padding.only(left=20,right=60, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Proyecto", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    *[ft.Text(value=dia[0], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK) for i,(dia,var) in enumerate(dias.items()) if tipo_empleado == "Confianza"],
-                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                ],
-                                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                                            ),*[ft.Row(
-                                                        controls=[
-                                                            ft.Container(content=ft.Text(f"{_[0]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[2]}  {_[3]}", size=12, color=ft.colors.BLACK,),padding=ft.padding.only(left=20,right=60, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[7]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            *[ft.Column(
+            filas_empleados = [
+    ft.Container(
+        bgcolor=ft.colors.BLUE_600,  # Fondo azul claro para la fila
+        padding=ft.padding.only(top=20),
+        content=ft.Column(
+            scroll=ft.ScrollMode.ALWAYS,
+            controls=[
+                ft.Row(
+                    scroll=ft.ScrollMode.ALWAYS,
+                    spacing=10,
+                    controls=[
+                        # Primera columna (no desplazable)
+                        ft.Column(
+                            controls=[
+                                ft.Row(controls=[
+                                    ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                    ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=200),
+                                    ft.Text("Proyecto", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                ]),
+                                *[ft.Row(controls=[
+                                    ft.TextField(value=f"{_[0]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                    ft.TextField(value=f"{_[2]}  {_[3]}", height=60, width=200, bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", color="black", text_align="center"),
+                                    ft.TextField(value=f"{_[7]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                ]) for index, _ in enumerate(empleados)]
+                            ]
+                        ),
+                        # Segunda columna (scrollable horizontalmente)
+                        ft.Row(scroll=ft.ScrollMode.ALWAYS,
+                            controls=[
+                                ft.Column(
+                                    scroll=ft.ScrollMode.ALWAYS,
+                                    controls=[
+                                        ft.Row(controls=[
+                                            *[ft.Text(value=dia[0], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, width=80) for i, (dia, var) in enumerate(dias.items()) if tipo_empleado == "Confianza"],
+                                            ft.Text("Aprobación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                        ]),
+                                        *[ft.Row(
+                                            controls=[
+                                                ft.Row(
+                                                    controls=[
+                                                        *[ft.Column(
                                                             controls=[
-                                                                ft.Row(
-                                                                    controls=[
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
-                                                                        ft.Checkbox(key=((str(_[0]),i),dias_semana[diasq[i]]),value=check_dias(dias_semana[diasq[i]],_[0],self.periodos),height=30, width=35, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,asis,dias_semana,_[1])),
-                                                                    ],
-                                                                    spacing=0
-                                                                ),
-                                                                ft.Row(
-                                                                    controls=[
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
-                                                                    ],
-                                                                    spacing=0
-                                                                ),
+                                                                ft.Row(controls=[
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10, on_change=updateHE),
+                                                                    ft.Checkbox(key=((str(_[0]), i), dias_semana[diasq[i]]), value=check_dias(dias_semana[diasq[i]], _[0], self.periodos), height=30, width=40, check_color="black", fill_color="white", on_change=lambda e: self.checkbox_changed(e, asis, dias_semana, _[1])),
+                                                                ], spacing=0),
+                                                                ft.Row(controls=[
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10, on_change=updateDT),
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10, on_change=updateTE),
+                                                                ], spacing=0),
                                                             ]
-                                                        ) for i,(dia,var) in enumerate(dias.items())],  # Checkbox para cada día
-                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
-                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,asis,HE_entries,DT_entries,TE_entries))
-                                                        ],scroll=ft.ScrollMode.ALWAYS,
-                                                        alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                                                    )for index,_ in enumerate(empleados)]
-                                        ]
-                                    )
-                                                )]
+                                                        ) for i, (dia, var) in enumerate(dias.items())]
+                                                    ]
+                                                ),
+                                                ft.Checkbox(key=((str(_[0]), str(_[1]))), value=False, width=70, on_change=self.Aprovecheck),
+                                                ft.ElevatedButton(key=(str(_[0]), _[1]), text="Añadir", icon=ft.icons.ADD, width=60, height=50, bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE, on_click=lambda e: self.datos(e, asis, HE_entries, DT_entries, TE_entries))
+                                            ]
+                                        ) for index, _ in enumerate(empleados)]
+                                    ]
+                                )
+                            ],  # Habilitar desplazamiento horizontal
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.START
+                ),
+            ]
+        )
+    )
+]
             for index,_ in enumerate(empleados):
                 for i,(dia,var) in enumerate(dias.items()):
                     x=check_dias(dias_semana[diasq[i]],_[0],self.periodos)
@@ -1195,31 +1272,23 @@ class AnimatedApp(ft.UserControl):
                     self.Aprovecheckbegin((_[0],_[1],False))    
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
         self.white_container.content=ft.Text(self.periodos, color=ft.colors.BLACK)
-        print("ASD",self.asis)
         self.update()
-    def cambio_departamentos_search(self, e,periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries):
+    def cambio_departamentos_search(self,periodos,dias,asis,multireg,todos,excel_file,pdf_file,HE_entries,DT_entries,TE_entries, e):
         var=Variables()
         dias_semana,semana=var.obtener_semana()
         def updateHE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             HE_entries[self.control.key]=self.control.value
-            print(HE_entries)
         def updateDT(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             DT_entries[self.control.key]=self.control.value
-            print(DT_entries)
         def updateTE(self):
             # Agregar el diálogo a la lista de overlays y abrirlo
-            print(self.control.key)
             TE_entries[self.control.key]=self.control.value
-            print(TE_entries)
         # Crear las opciones para el Dropdown de departamentos
         tipo_dep = self.dropdown_departamentos.value
         tipo_empleado = self.dropdown_tipo_empleado.value
         # Asignar las opciones generadas al Dropdown de departamentos
-        print(e.control.value)
         empleados=obtener_empleados_search(tipo_dep,tipo_empleado,e.control.value)
         if tipo_empleado=="Sindicato":
             filas_empleados=[ft.Container(
@@ -1230,124 +1299,135 @@ class AnimatedApp(ft.UserControl):
                                                     ft.Row(
                                                 spacing=10,
                                                 controls=[
-                                                    ft.Container(content=ft.Text("ID", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Nombre", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  padding=ft.padding.only(left=20,right=600, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Proyecto", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    *[ft.Text(value=semana[i], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK) for i in range(7) if tipo_empleado == "Sindicato"],
-                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+                                                    ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                                    ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=200),
+                                                    ft.Text("Proyecto", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                                    *[ft.Text(value=semana[i], size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=80) for i in range(7) if tipo_empleado == "Sindicato"],
+                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center",width=70),
                                                 ],
-                                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                                                alignment=ft.MainAxisAlignment.START
                                             ),
                                             *[ft.Row(
                                                         controls=[
-                                                            ft.Container(content=ft.Text(f"{_[0]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[2]}  {_[3]}", size=12, color=ft.colors.BLACK,),padding=ft.padding.only(left=20,right=60, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[7]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
+                                                            ft.TextField(value=f"{_[0]}",  height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                                            ft.TextField(value=f"{_[2]}  {_[3]}", height=60, width=200, bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", color="black", text_align="center"),
+                                                            ft.TextField(value=f"{_[7]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
                                                             *[ft.Column(
                                                             controls=[
                                                                 ft.Row(
                                                                     controls=[
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
-                                                                        ft.Checkbox(label=semana[__],key=(str(_[0]),__),value=check_dias(semana[__],_[0],self.periodos),height=30, width=35, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,self.asis,dias_semana,_[1])),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
+                                                                        ft.Checkbox(key=(str(_[0]),__),value=check_dias(semana[__],_[0],self.periodos),height=30, width=40, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,asis,dias_semana,_[1])),
                                                                     ],
-                                                                    spacing=0
                                                                 ),
                                                                 ft.Row(
                                                                     controls=[
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
-                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=35, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
+                                                                        ft.TextField(key=(str(_[0]),__),height=30, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
                                                                     ],
-                                                                    spacing=0
                                                                 ),
                                                             ]
                                                         ) for __ in range(7)],  # Checkbox para cada día
-                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
-                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,self.asis,HE_entries,DT_entries,TE_entries))
+                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,width=70,on_change=self.Aprovecheck),
+                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",icon=ft.icons.ADD, width=60, height=50, bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE,on_click=lambda e: self.datos(e,asis,HE_entries,DT_entries,TE_entries))
                                                         ],
-                                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                                                     )for index,_ in enumerate(empleados)],
-                                            
                                         ],
                                     )
                                                 )]
             for index,_ in enumerate(empleados):
                 for __ in range(7):
-                    e=check_dias(semana[__],_[0],self.periodos)
-                    self.asis_changed((str(_[0]),__),x,dias_semana,_[1])
-                    self.Aprovecheckbegin((_[0],_[1],False))       
+                    x=check_dias(semana[__],_[0],self.periodos)
+                    self.asis_changed(((str(_[0]),__),semana[__]),x,dias_semana,_[1])
+                    self.Aprovecheckbegin((_[0],_[1],False))    
         else:
             diasq=obtener_quincenas()
             dias=sortdias(diasq)
-            print(diasq)
-            filas_empleados=[ft.Container(
-                                    bgcolor=ft.colors.BLUE_600,  # Fondo azul claro para la fila
-                                    padding=ft.padding.only(top=20),
-                                    content=ft.Column(
-                                        controls=[
-                                                    ft.Row(
-                                                spacing=10,
-                                                controls=[
-                                                    ft.Container(content=ft.Text("ID", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Nombre", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  padding=ft.padding.only(left=20,right=90, top=0, bottom=0)),
-                                                    ft.Container(content=ft.Text("Proyecto", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK), padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                    *[ft.Text(value=dia[0], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK) for i,(dia,var) in enumerate(dias.items()) if tipo_empleado == "Confianza"],
-                                                    ft.Text("Aprovación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
-                                                ],
-                                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                                            ),*[ft.Row(
-                                                        controls=[
-                                                            ft.Container(content=ft.Text(f"{_[0]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[2]}  {_[3]}", size=12, color=ft.colors.BLACK,),padding=ft.padding.only(left=20,right=90, top=0, bottom=0)),
-                                                            ft.Container(content=ft.Text(f"{_[7]}", size=12, color=ft.colors.BLACK),padding=ft.padding.only(left=20,right=10, top=0, bottom=0)),
-                                                            *[ft.Column(
+            filas_empleados = [
+    ft.Container(
+        bgcolor=ft.colors.BLUE_600,  # Fondo azul claro para la fila
+        padding=ft.padding.only(top=20),
+        content=ft.Column(
+            scroll=ft.ScrollMode.ALWAYS,
+            controls=[
+                ft.Row(
+                    scroll=ft.ScrollMode.ALWAYS,
+                    spacing=10,
+                    controls=[
+                        # Primera columna (no desplazable)
+                        ft.Column(
+                            controls=[
+                                ft.Row(controls=[
+                                    ft.Text("ID", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                    ft.Text("Nombre", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=200),
+                                    ft.Text("Proyecto", size=16, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                ]),
+                                *[ft.Row(controls=[
+                                    ft.TextField(value=f"{_[0]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                    ft.TextField(value=f"{_[2]}  {_[3]}", height=60, width=200, bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", color="black", text_align="center"),
+                                    ft.TextField(value=f"{_[7]}", height=60, width=70, color="black", bgcolor=ft.colors.BLUE_300, disabled=True, multiline=True, min_lines=1, max_lines=2, text_size=13, border="none", text_align="center"),
+                                ]) for index, _ in enumerate(empleados)]
+                            ]
+                        ),
+                        # Segunda columna (scrollable horizontalmente)
+                        ft.Row(scroll=ft.ScrollMode.ALWAYS,
+                            controls=[
+                                ft.Column(
+                                    scroll=ft.ScrollMode.ALWAYS,
+                                    controls=[
+                                        ft.Row(controls=[
+                                            *[ft.Text(value=dia[0], size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, width=80) for i, (dia, var) in enumerate(dias.items()) if tipo_empleado == "Confianza"],
+                                            ft.Text("Aprobación", size=12, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK, text_align="center", width=70),
+                                        ]),
+                                        *[ft.Row(
+                                            controls=[
+                                                ft.Row(
+                                                    controls=[
+                                                        *[ft.Column(
                                                             controls=[
-                                                                ft.Row(
-                                                                    controls=[
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10,on_change=updateHE),
-                                                                        ft.Checkbox(key=((str(_[0]),i),dias_semana[diasq[i]]),value=check_dias(dias_semana[diasq[i]],_[0],self.periodos),height=30, width=35, check_color="black", fill_color="white",on_change=lambda e:self.checkbox_changed(e,self.asis,dias_semana,_[1])),
-                                                                    ],
-                                                                    spacing=0
-                                                                ),
-                                                                ft.Row(
-                                                                    controls=[
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10,on_change=updateDT),
-                                                                        ft.TextField(key=(str(_[0]),i),height=30, width=35, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10,on_change=updateTE),
-                                                                    ],
-                                                                    spacing=0
-                                                                ),
+                                                                ft.Row(controls=[
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="HE", bgcolor="white", text_align="center", text_size=10, on_change=updateHE),
+                                                                    ft.Checkbox(key=((str(_[0]), i), dias_semana[diasq[i]]), value=check_dias(dias_semana[diasq[i]], _[0], self.periodos), height=30, width=40, check_color="black", fill_color="white", on_change=lambda e: self.checkbox_changed(e, asis, dias_semana, _[1])),
+                                                                ], spacing=0),
+                                                                ft.Row(controls=[
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="DT", bgcolor="white", text_align="center", text_size=10, on_change=updateDT),
+                                                                    ft.TextField(key=(str(_[0]), i), height=30, width=40, color="black", hint_text="TE", bgcolor="white", text_align="center", text_size=10, on_change=updateTE),
+                                                                ], spacing=0),
                                                             ]
-                                                        ) for i,(dia,var) in enumerate(dias.items())],  # Checkbox para cada día
-                                                            ft.Checkbox(key=((str(_[0]),str(_[1]))),value=False,on_change=self.Aprovecheck),
-                                                            ft.ElevatedButton(key=(str(_[0]),_[1]),text="Añadir",bgcolor=ft.colors.BLUE_800,color=ft.colors.WHITE,on_click=lambda e:self.datos(e,self.asis,HE_entries,DT_entries,TE_entries))
-                                                        ],
-                                                        alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                                                    )for index,_ in enumerate(empleados)]
-                                        ]
-                                    )
-                                                )]
-            print("confianza")
+                                                        ) for i, (dia, var) in enumerate(dias.items())]
+                                                    ]
+                                                ),
+                                                ft.Checkbox(key=((str(_[0]), str(_[1]))), value=False, width=70, on_change=self.Aprovecheck),
+                                                ft.ElevatedButton(key=(str(_[0]), _[1]), text="Añadir", icon=ft.icons.ADD, width=60, height=50, bgcolor=ft.colors.BLUE_900, color=ft.colors.WHITE, on_click=lambda e: self.datos(e, asis, HE_entries, DT_entries, TE_entries))
+                                            ]
+                                        ) for index, _ in enumerate(empleados)]
+                                    ]
+                                )
+                            ],  # Habilitar desplazamiento horizontal
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.START
+                ),
+            ]
+        )
+    )
+]
             for index,_ in enumerate(empleados):
                 for i,(dia,var) in enumerate(dias.items()):
                     x=check_dias(dias_semana[diasq[i]],_[0],self.periodos)
                     self.asis_changed(((str(_[0]),i),dias_semana[diasq[i]]),x,dias_semana,_[1])
-                    self.Aprovecheckbegin((_[0],_[1],False))        
+                    self.Aprovecheckbegin((_[0],_[1],False))    
         self.contenedor_empleados.content = ft.Column(controls=filas_empleados)
-        print("ASD",self.asis) 
+        self.white_container.content=ft.Text(self.periodos, color=ft.colors.BLACK)
         self.update()
     def Aprovecheck(self,e):
         try:
-            print("WORKS")
-            print(e.control.key[1],e.control.key[0])
             self.valid[e.control.key[1],e.control.key[0]]=e.control.value
-            print(self.valid)
         except Exception as e:
             logging.error("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
     def Aprovecheckbegin(self,e):
         try:
-            print("WORKS")
-            print(e[1],e[0])
             self.valid[e[1],e[0]]=e[2]
-            print(self.valid)
         except Exception as e:
             logging.error("Error", f"Error al ejecutar el Proceso Almacenado: {e}")
     def checkbox_changed(e,x,asist,dias_semana,nomina):
@@ -1357,11 +1437,15 @@ class AnimatedApp(ft.UserControl):
             e.asis[x.control.key[1],x.control.key[0]]=int(x.control.value)
     def asis_changed(e,x,asist,dias_semana,nomina):
         if nomina=="1":
-            print(x[0])
-            e.asis[x[1],x[0]]=int(asist)
+            if e.asis==None:
+                 e.asis[x[1],x[0]]=0
+            else:
+                e.asis[x[1],x[0]]=int(asist)
         else:
-            print(x[0])
-            e.asis[x[1],x[0]]=int(asist)
+            if e.asis==None:
+                 e.asis[x[1],x[0]]=0
+            else:   
+                e.asis[x[1],x[0]]=int(asist)
     def tipo_empleado_cambiado(self, e=None):
         # Obtiene el valor seleccionado en el primer Dropdown
         self.dropdown_departamentos.disabled=False
@@ -1376,20 +1460,18 @@ class AnimatedApp(ft.UserControl):
         self.periodos=periodos
         self.update()
         return periodos
-    def logout(self, e):
-        # Acción a realizar al hacer clic en "Cerrar sesión"
-        print("Cierre de sesión realizado.")  # Puedes cambiar esta línea por la lógica de cierre de sesión que desees.
 
     def send_data(self,tipo_d,tipo_e,periodos):
         tipo_e = self.dropdown_tipo_empleado.value
         tipo_d = self.dropdown_departamentos.value
-        print(tipo_e,tipo_d,periodos)
         excel_add(0,tipo_d,tipo_e,periodos)
-        print("Datos enviados.")  # Puedes reemplazar esto con la lógica que necesites para enviar los datos
     def bar_icons(self, e):
         # Acción para el icono del botón de inicio (sin uso en este caso)
         pass
-
+def logout(page):
+        page.views.clear()  # Limpia todas las vistas actuales
+        page.go("/login")   # Redirige a la vista inicial
+        page.update()       # Actualiza la página
 def encrypt(plain_text):
     str_out = ""
     outx_ = bytearray(len(plain_text))
@@ -1409,26 +1491,24 @@ host=socket.gethostname()
 departamentos=[]
 us=""
 def obtener_departamentos(usern):
-        db = ConexionBD(host,database="JumapamSistemas",user="",password="")
+        db = ConexionBD(host="148.200.128.15",database="JumapamSistemas",user="andres",password="Andr3s2024")
         db.conectar()
-        print(usern)
         resultado=db.ejecutar_consulta("SELECT ID_USUARIO FROM MAE_SISTEMAS_USUARIOS WHERE NOMBRE_USUARIO=?",usern)
         id=str(resultado[0][0])
-        print(id)
         res=db.ejecutar_consulta("SELECT CLAVE_DEPARTAMENTO FROM HIS_SISTEMAS_DEPUSER WHERE ID_USUARIO=?",id)
         for i in res:
             departamentos.append(str(i[0]))
         db.cerrar()
         return departamentos
 def main(page: ft.Page):
-    page.title = "Fife's app"
     page.add(Text("Welcome"))
+    page.window_maximized = True  
     snack = SnackBar(
         Text("Registration successful")
     )
     def verificar_acceso(username, password):
         try:
-            db = ConexionBD(host,database="JumapamSistemas",user="",password="")
+            db = ConexionBD(host="148.200.128.15",database="JumapamSistemas",user="andres",password="Andr3s2024")
             db.conectar()
             usuario=username
             password = password
@@ -1455,14 +1535,20 @@ def main(page: ft.Page):
         password = encrypt(password)    
         if verificar_acceso(username, password):
             obtener_departamentos(username)
-            us=username
             page.views.append(
                 ft.View(
                 "/home",
                 [
-                    ft.AppBar(title=ft.Text("Home Page"), bgcolor=ft.colors.AMBER_ACCENT_700),
                     ft.Text(f"Welcome, {username}!!"),
-                    AnimatedApp()
+                    AnimatedApp(),
+                    ft.ElevatedButton(
+                        text="Cerrar sesión",
+                        bgcolor=ft.colors.RED_400,
+                        color=ft.colors.WHITE,
+                        width=140,
+                        height=40,
+                        on_click=lambda e:logout(page)  # Función para manejar el evento de clic
+                    ) 
                 ]
                 )        
             )
@@ -1474,33 +1560,93 @@ def main(page: ft.Page):
             page.update()
 
     def route_change(route):
-        username = TextField(
-            label="Usuario",
-            border="underline", # type: ignore
-            width=320,
-            text_size=14,
-        )
+        username = ft.TextField(
+                    width=280,  # Aumenta el ancho del campo para que quede alineado con el contenedor
+                    height=40,
+                    hint_text="Usuario",
+                    border="underline",
+                    color="black",
+                    prefix_icon=ft.icons.EMAIL,
+                )
 
-        password = TextField(
-            label="Contraseña",
-            border="underline", # type: ignore
-            width=320,
-            text_size=14,
-            password=True,
-            can_reveal_password=True
-        )
+        password = ft.TextField(
+                    width=280,  # Aumenta el ancho del campo para que quede alineado con el contenedor
+                    height=40,
+                    hint_text="Contraseña",
+                    border="underline",
+                    color="black",
+                    prefix_icon=ft.icons.LOCK,
+                    password=True
+                )
+        conteiner = ft.Container(
+        ft.Column([
+            # Contenedor de la imagen
+            ft.Container(
+                ft.Image(
+                    src="https://jumapam.gob.mx/images/JPG/jumapam.jpg",  # Cambia a la URL o ruta de tu imagen
+                    width=120,
+                    height=120,
+                    fit=ft.ImageFit.CONTAIN
+                ),
+                alignment=ft.alignment.center,  # Centra la imagen dentro de su contenedor
+                padding=ft.padding.only(20, 20)
+            ),
+            ft.Container(
+                ft.Text(
+                    "Iniciar Sesión",
+                    color="black",
+                    width=320,
+                    size=30,
+                    text_align="center",
+                    weight="w900"
+                ),
+                padding=ft.padding.only(20, 20),
+                alignment=ft.alignment.center
+            ),
+            ft.Container(
+                username,
+                padding=ft.padding.only(20, 10),
+                alignment=ft.alignment.center  # Centra el campo en el contenedor
+            ),
+            ft.Container(
+                password,
+                padding=ft.padding.only(20, 10),
+                alignment=ft.alignment.center  # Centra el campo en el contenedor
+            ),
+            ft.Container(
+                ft.ElevatedButton(
+                    text="Iniciar",
+                    width=280,
+                    bgcolor="black",
+                    color="white",
+                    on_click=lambda e: iniciar_sesion(e, username.value, password.value)
+                ),
+                padding=ft.padding.only(20, 20),
+                alignment=ft.alignment.center  # Centra el botón en el contenedor
+            ),
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,  # Centra verticalmente el contenido en la columna
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER  # Centra horizontalmente el contenido en la columna
+        ),
+        border_radius=20,
+        width=360,
+        height=500,
+        gradient=ft.LinearGradient([
+            ft.colors.WHITE,
+        ])
+    )
 
         page.views.clear()
         page.views.append(
             ft.View(
                     "/login",
                     [
-                        ft.AppBar(title=ft.Text("Inicio de sesion"), bgcolor=ft.colors.SURFACE_VARIANT),
-                        username,
-                        password,
-                        ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
-                        # ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/home")),
+                        conteiner,
                     ],
+                    bgcolor = ft.colors.BLUE_900,
+                    padding = 0,
+                    vertical_alignment = "center",  # Centra verticalmente el contenedor en la pantalla
+                    horizontal_alignment = "center",  # Centra horizontalmente el contenedor en la pantalla
                 )
         )
         if page.route == "/login":
@@ -1508,21 +1654,31 @@ def main(page: ft.Page):
                 ft.View(
                     "/login",
                     [
-                        ft.AppBar(title=ft.Text("Inicio de sesion"), bgcolor=ft.colors.SURFACE_VARIANT),
-                        username,
-                        password,
-                        ft.FilledButton("Ingreso", on_click=lambda e: iniciar_sesion(e, username.value, password.value)),
+                        conteiner,
                     ],
+                    bgcolor = ft.colors.BLUE_900,
+                    padding = 0,
+                    vertical_alignment = "center",  # Centra verticalmente el contenedor en la pantalla
+                    horizontal_alignment = "center",  # Centra horizontalmente el contenedor en la pantalla
                 )
             )
-
+        elif page.route=="/home":
+            page.views.append(
+                ft.View(
+                "/home",
+                [
+                    ft.Text(f"Welcome, {username}!!"),
+                    AnimatedApp()
+                ]
+                )        
+            )
         page.update()
 
     def view_pop(view):
         page.views.pop()
         top_view = page.views[-1]
         page.go(top_view.route)
-
+    page.title = 'login'
     page.on_route_change = route_change
     page.on_view_pop = view_pop
     page.go(page.route)
